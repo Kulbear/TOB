@@ -1,0 +1,6 @@
+{
+    "dailyTextChatExpLimit": 50,
+    "dailyVoiceChatExpLimit": 50,
+
+    "numMinuteVoiceChatExpIncrease": 5
+}
