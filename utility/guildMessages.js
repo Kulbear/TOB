@@ -13,7 +13,7 @@ function sendMessageToChannel(client, channelId, messageContent) {
 
     return client.channels.fetch(channelId)
         .then(channel => {
-            return channel.send(embed);
+            return channel.send({ embeds: [embed] });
         });
 }
 

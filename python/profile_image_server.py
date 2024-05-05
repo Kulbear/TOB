@@ -137,7 +137,7 @@ def build_profile_image(payload):
     )
 
     # Save the image
-    cv2.imwrite("profile.jpg", canvas)
+    cv2.imwrite(f"profile_{dc_name}.jpg", canvas)
 
     # Remove avatar.jpg
     os.remove("avatar.jpg")
