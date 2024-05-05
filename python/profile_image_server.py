@@ -10,7 +10,7 @@ from flask_restful import reqparse, Api, Resource
 
 # TODO: move to a separate config file
 rank_names = {
-    "0-0": "不堪一击",
+    "0-0": "不堪一击（需要完成初始任务）",
     "1-9": "初窥门径",
     "10-19": "略有小成",
     "20-24": "心领神会",
