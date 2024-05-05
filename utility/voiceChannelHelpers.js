@@ -24,7 +24,7 @@ async function onVoiceChannelUserActivity(client, supabase, userId, activity) {
     }
     else if (activity === 'UserLeaveVC' || activity === 'UserSwitchVC') {
         console.debug(`[DEBUG][onVoiceChannelUserActivity] ${activity}`);
-        supabase.from('VoiceChannelActivityRecord').select('*').eq('dcId', userId).eq('activity', 'UserJoinVC')
+        supabase.from('VoiceChannelActivityRecord').select('*').eq('dcId', userId).eq('activity', 'UserJoinVC').order('timestamp', { ascending: false }).limit(1)
             .then((res) => {
                 if (res.error !== null) {
                     console.error(res.error);
