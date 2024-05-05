@@ -1,10 +1,13 @@
 const fs = require('fs');
 
-const { SlashCommandBuilder } = require('discord.js');
+const { SlashCommandBuilder, AttachmentBuilder } = require('discord.js');
 const { getInteractionUserProfile } = require('../../utility/playerProfile.js');
 const { sendMessageToChannel } = require('../../utility/guildMessages.js');
-const { debugChannelId } = require('../../config.json');
 const { ExpLevelMapping } = require('../../models/static.js');
+const { debugChannelId } = require('../../config.json');
+const { dailyTextChatExpLimit, dailyVoiceChatExpLimit } = require('../../botConfig.json');
+const { convertMsToDHMS } = require('../../utility/helpers.js');
+const { buildUserProfileEmbed } = require('../../utility/embeds.js');
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -17,14 +20,16 @@ module.exports = {
         const client = interaction.user.client;
 
         getInteractionUserProfile(interaction, supabase)
-            .then((player) => {
+            .then((res) => {
+                const player = res.player;
+                const counter = res.counter;
                 if (player === null) {
                     sendMessageToChannel(
                         client,
                         debugChannelId,
-                        `出了一些问题， @${userTag} 的资料好像消失在了虚空之中...`,
+                        `出了一些问题，@${userTag} 的资料好像消失在了虚空之中...`,
                     );
-                    return null;
+                    return { payload: null, counter: null };
                 }
                 else {
                     // send a post request to the python server at the given endpoint
@@ -35,6 +40,7 @@ module.exports = {
                     const payload = {
                         dcName: userNickname,
                         dcId: player.dcId,
+                        dcTag: userTag,
                         level: player.level,
                         expCurrentLevel: ExpLevelMapping[player.level],
                         expCurrentUser: player.expCurrentLevel,
@@ -42,61 +48,69 @@ module.exports = {
                         avatarId: interaction.user.avatar,
                     };
 
-                    return payload;
+                    return { payload: payload, counter: counter };
                 }
             })
-            .then((payload) => {
+            .then((res) => {
+                const payload = res.payload;
+                const counter = res.counter;
                 if (payload === null) {
                     return;
                 }
-                fetch('http://127.0.0.1:5000/profile_image', {
-                    method: 'POST',
-                    mode: 'cors',
-                    cache: 'no-cache',
-                    credentials: 'same-origin',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    redirect: 'follow',
-                    referrerPolicy: 'no-referrer',
-                    body: JSON.stringify(payload),
-                }).then((res) => {
-                    if (res.status === 200) {
-                        return client.channels.fetch(interaction.channel.id)
-                            .then((channel) => {
-                                interaction.reply({
-                                    content: 'TOB 刚刚努力在一堆资料中翻出了你的名片...',
-                                    ephemeral: false,
-                                });
-                                setTimeout(() => {
-                                    channel.send({
-                                        files: [
-                                            {
-                                                attachment: `python/profile_${userNickname}.jpg`,
-                                                name: 'profile.jpg',
-                                            },
-                                        ],
-                                    });
-                                }, 1500);
-                            });
-                    }
-                    else {
-                        interaction.reply({
-                            content: '其实 TOB 也不知道发生了什么，但是你的名片显然是没能生成。请联系管理员或稍后再试！',
-                            ephemeral: false,
-                        });
-                    }
-                }).catch(() => {
-                    interaction.reply({
-                        content: '其实 TOB 也不知道发生了什么，但是你的名片显然是没能生成。请联系管理员或稍后再试！',
-                        ephemeral: false,
-                    });
-                });
+                fetch('http://127.0.0.1:5000/profile_image',
+                    {
+                        method: 'POST',
+                        mode: 'cors',
+                        cache: 'no-cache',
+                        credentials: 'same-origin',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        redirect: 'follow',
+                        referrerPolicy: 'no-referrer',
+                        body: JSON.stringify(payload),
+                    })
+                    .then((res) => {
+                        const expireDate = new Date(counter.lastResetTime);
+                        expireDate.setHours(counter.lastResetTime.getHours() + 24);
+                        const { days, hours, minutes } = convertMsToDHMS(expireDate - new Date());
+                        const diffStr = (days > 0 ? `${days} 天 ` : '') + (hours > 0 ? `${hours} 小时 ` : '') + (minutes > 0 ? `${minutes} 分钟 ` : '') + '后';
 
+                        const profileCardImage = new AttachmentBuilder(`python/profile_${userTag}.jpg`, { name: `profile_${userTag}.jpg` });
+                        const embed = buildUserProfileEmbed({
+                            userNickname: userNickname,
+                            userTag: userTag,
+                            dailyTextChatExpLimit: dailyTextChatExpLimit,
+                            dailyVoiceChatExpLimit: dailyVoiceChatExpLimit,
+                            counter: counter,
+                            diffStr: diffStr,
+                        });
+
+                        if (res.status === 200) {
+                            return interaction.reply({
+                                content: 'TOB 刚刚在堆积如山的资料中翻出了你的档案...',
+                                ephemeral: false,
+                                embeds: [embed],
+                                files: [profileCardImage],
+                            });
+                        }
+                        else {
+                            interaction.reply({
+                                content: 'TOB 费了九牛二虎之力也没有找到你的信息。请联系管理员或稍后再试！',
+                                ephemeral: false,
+                            });
+                        }
+                    });
             })
             .then(() => {
-                // remove python/profile.jpg after a
-                fs.unlink(`python/profile_${userNickname}.jpg`, () => { return; });
+                fs.unlink(`python/profile_${userTag}.jpg`, () => { return; });
+            })
+            .catch((err) => {
+                console.error(err);
+                interaction.reply({
+                    content: 'TOB 的内核出现了损毁。请联系管理员或立即报警（千万别）！',
+                    ephemeral: false,
+                });
             });
     },
 };

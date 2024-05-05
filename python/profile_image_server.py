@@ -49,7 +49,7 @@ def trim_text(text, max_length=12):
 
 
 def build_profile_image(payload):
-
+    dc_tag = payload["dcTag"]
     dc_name = payload["dcName"]
     level = payload["level"]
     exp_current_level = payload["expCurrentLevel"]
@@ -118,7 +118,7 @@ def build_profile_image(payload):
         # 0.42 = 0.72 - 0.3
         (
             int(0.23 * canvas.shape[1])
-            + int(0.42 * (exp_current_user / exp_current_level) * canvas.shape[1]),
+            + int(0.42 * (exp_current_user / (exp_current_level + 1e-3)) * canvas.shape[1]),
             int(0.81 * canvas.shape[0]),
         ),
         (220, 130, 130),
@@ -137,7 +137,7 @@ def build_profile_image(payload):
     )
 
     # Save the image
-    cv2.imwrite(f"profile_{dc_name}.jpg", canvas)
+    cv2.imwrite(f"profile_{dc_tag}.jpg", canvas)
 
     # Remove avatar.jpg
     os.remove("avatar.jpg")
@@ -148,6 +148,7 @@ class ProfileImage(Resource):
     def post(self):
         parser = reqparse.RequestParser()
         parser.add_argument("dcName", type=str)
+        parser.add_argument("dcTag", type=str)
         parser.add_argument("level", type=int)
         parser.add_argument("expCurrentLevel", type=int)
         parser.add_argument("expCurrentUser", type=int)

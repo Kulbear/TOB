@@ -21,21 +21,21 @@ async function onGuildAvailableScanUsers(guild) {
 async function addUserToStore(supabase, member) {
     const guild = member.guild;
     console.debug('[DEBUG][addUserToStore]', member.user.tag, guild.id);
-    // skip bot users
-    if (member.user.bot) {
-        console.debug(`[DEBUG] ${member.user.tag} is a bot user. Skipping.`);
-        return;
-    }
     console.debug(`[DEBUG] ${member.user.tag} is not found in the store.`);
     const player = new Player(member.user.id, member.user.tag, guild.id);
     const playerData = player.returnAttributeToStore();
     supabase.from('Player').insert(playerData)
-        .then((r) => {
-            console.debug(`[DEBUG] Inserted data ${JSON.stringify(r)}.`);
+        .then((res) => {
+            if (res.error !== null) {
+                console.error(res.error);
+            }
         });
 }
 
 async function onUserAddToGuild(supabase, member) {
+    if (member.user.bot) {
+        return;
+    }
     const guild = member.guild;
     console.debug('[DEBUG][onUserAddToGuild]', member.user.tag, guild.name);
     supabase.from('Player').select().eq('dcId', member.user.id).eq('guildId', guild.id)
@@ -66,6 +66,9 @@ async function onGuildAvailableBatchInitUsers(supabase, guild) {
         // if no, create a new player profile
         // then update the player profile to the store
         members.forEach(member => {
+            if (member.user.bot) {
+                return;
+            }
             supabase.from('Player').select().eq('dcId', member.user.id).eq('guildId', guild.id)
                 .then((res) => {
                     if (res.error !== null) {
@@ -85,6 +88,7 @@ async function getInteractionUserProfile(interaction, supabase) {
     return supabase.from('Player').select().eq('dcId', user.id).eq('guildId', guild.id)
         .then((res) => {
             if (res.data.length === 0) {
+                console.debug(`[DEBUG][getInteractionUserProfile] ${user.tag} is not found in the store.`);
                 return null;
             }
             else {
@@ -101,6 +105,31 @@ async function getInteractionUserProfile(interaction, supabase) {
 
                 return player;
             }
+        })
+        .then((player) => {
+            // fetch counter data related to this player
+            if (player === null) {
+                return null, null;
+            }
+            return supabase.from('Counter').select().eq('dcId', player.dcId)
+                .then((res) => {
+                    const counter = new Counter();
+                    if (res.data.length !== 0) {
+                        counter.updateAttributeFromStore(res.data[0]);
+                    }
+                    else {
+                        counter.setDcId(player.dcId);
+                        counter.setDcTag(player.dcTag);
+                        counter.resetDaily();
+                        supabase.from('Counter').insert(counter.returnAttributeToStore())
+                            .then((res) => {
+                                if (res.error !== null) {
+                                    console.error(res.error);
+                                }
+                            });
+                    }
+                    return { player: player, counter: counter };
+                });
         });
 }
 
