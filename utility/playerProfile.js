@@ -18,7 +18,8 @@ async function onGuildAvailableScanUsers(guild) {
     }).catch(console.error);
 }
 
-async function addUserToStore(member, guild, supabase) {
+async function addUserToStore(supabase, member) {
+    const guild = member.guild;
     console.debug('[DEBUG][addUserToStore]', member.user.tag, guild.id);
     // skip bot users
     if (member.user.bot) {
@@ -34,12 +35,13 @@ async function addUserToStore(member, guild, supabase) {
         });
 }
 
-async function onUserAddToGuild(member, guild, supabase) {
+async function onUserAddToGuild(supabase, member) {
+    const guild = member.guild;
     console.debug('[DEBUG][onUserAddToGuild]', member.user.tag, guild.name);
     supabase.from('Player').select().eq('dcId', member.user.id).eq('guildId', guild.id)
         .then((res) => {
             if (res.data.length === 0) {
-                addUserToStore(member, guild, supabase);
+                addUserToStore(supabase, member);
             }
             else {
                 console.debug(`[DEBUG] ${member.user.tag} is found in the store. No action is taken!`);
@@ -47,7 +49,8 @@ async function onUserAddToGuild(member, guild, supabase) {
         });
 }
 
-async function onUserRemoveFromGuild(member, guild, supabase) {
+async function onUserRemoveFromGuild(supabase, member) {
+    const guild = member.guild;
     console.debug('[DEBUG][onUserRemoveFromGuild]', member.user.tag, guild.name);
     supabase.from('Player').delete().eq('dcId', member.user.id).eq('guildId', guild.id)
         .then((res) => {
@@ -55,7 +58,7 @@ async function onUserRemoveFromGuild(member, guild, supabase) {
         });
 }
 
-async function onGuildAvailableBatchInitUsers(guild, supabase) {
+async function onGuildAvailableBatchInitUsers(supabase, guild) {
     console.debug('[DEBUG][onGuildAvailableBatchInitUsers]', guild.name);
     guild.members.fetch().then((members) => {
         // for every user check if supabase has the user data in Player table
@@ -69,14 +72,14 @@ async function onGuildAvailableBatchInitUsers(guild, supabase) {
                         console.error(res.error);
                     }
                     if (res.data.length === 0) {
-                        addUserToStore(member, guild, supabase);
+                        addUserToStore(supabase, member);
                     }
                 });
         });
     });
 }
 
-async function getUserProfile(interaction, supabase) {
+async function getInteractionUserProfile(interaction, supabase) {
     const user = interaction.user;
     const guild = interaction.guild;
     return supabase.from('Player').select().eq('dcId', user.id).eq('guildId', guild.id)
@@ -96,7 +99,6 @@ async function getUserProfile(interaction, supabase) {
                         }
                     });
 
-                console.debug(JSON.stringify(player));
                 return player;
             }
         });
@@ -119,7 +121,7 @@ async function updateUserExp(supabase, player, dcId, expChange) {
 async function accumulateExp(client, supabase, userId, exp, expDailyLimit, counterKey) {
     console.debug('[DEBUG][accumulateExp]', userId, exp, expDailyLimit, counterKey);
     const dcTag = client.users.cache.get(userId).username;
-    console.log(client.guilds.cache);
+
     supabase.from('Counter').select('*').eq('dcId', userId)
         .then((res) => {
             if (res.error !== null) {
@@ -155,7 +157,7 @@ async function accumulateExp(client, supabase, userId, exp, expDailyLimit, count
                             console.error(res.error);
                         }
                         else {
-                            console.debug(`Counter for ${userId} updated. Current Daily Counter: `, counter.returnAttributeToStore());
+                            console.debug(`[DEBUG][accumulateExp] Counter for ${userId} updated. Current Daily Counter: `, counter.returnAttributeToStore());
                         }
                     });
                 return actualExpChange;
@@ -214,7 +216,7 @@ module.exports = {
     onGuildAvailableBatchInitUsers,
     onUserAddToGuild,
     onUserRemoveFromGuild,
-    getUserProfile,
+    getInteractionUserProfile,
     updateUserExp,
     accumulateExp,
 };

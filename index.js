@@ -80,13 +80,13 @@ client.on(Events.MessageCreate, async (message) => {
 
 client.on(Events.GuildAvailable, async (guild) => {
     onGuildAvailableInfoLog(guild);
-    onGuildAvailableBatchInitUsers(guild, supabase);
+    onGuildAvailableBatchInitUsers(supabase, guild);
 });
 
 // when user join server
 client.on(Events.GuildMemberAdd, async (member) => {
     console.debug(`用户 <@${member.user.id}> 刚刚加入了服务器!`);
-    onUserAddToGuild(member, member.guild, supabase);
+    onUserAddToGuild(supabase, member);
     sendMessageToChannel(
         client,
         debugChannelId,
@@ -97,7 +97,7 @@ client.on(Events.GuildMemberAdd, async (member) => {
 // wher user leave server
 client.on(Events.GuildMemberRemove, async (member) => {
     console.debug(`用户 <@${member.user.id}> 刚刚离开了服务器!`);
-    onUserRemoveFromGuild(member, member.guild, supabase);
+    onUserRemoveFromGuild(supabase, member);
     sendMessageToChannel(
         client,
         debugChannelId,

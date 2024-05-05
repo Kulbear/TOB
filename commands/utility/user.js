@@ -1,11 +1,10 @@
 const fs = require('fs');
 
 const { SlashCommandBuilder } = require('discord.js');
-const { getUserProfile } = require('../../utility/playerProfile.js');
+const { getInteractionUserProfile } = require('../../utility/playerProfile.js');
 const { sendMessageToChannel } = require('../../utility/guildMessages.js');
 const { debugChannelId } = require('../../config.json');
 const { ExpLevelMapping } = require('../../models/static.js');
-const { time } = require('console');
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -17,7 +16,7 @@ module.exports = {
         const userTag = interaction.user.tag;
         const client = interaction.user.client;
 
-        getUserProfile(interaction, supabase)
+        getInteractionUserProfile(interaction, supabase)
             .then((player) => {
                 if (player === null) {
                     sendMessageToChannel(
