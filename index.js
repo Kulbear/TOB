@@ -108,6 +108,7 @@ client.on(Events.GuildMemberRemove, async (member) => {
 client.on('voiceStateUpdate', (oldState, newState) => {
     const oldChannel = oldState.channelId;
     const newChannel = newState.channelId;
+
     // this is a collection
     // get the first item
     const oldChannelObj = client.channels.cache.get(oldChannel);
@@ -122,6 +123,7 @@ client.on('voiceStateUpdate', (oldState, newState) => {
         onVoiceChannelUserActivity(client, supabase, oldState.id, 'UserJoinVC');
     }
     else if (oldChannel !== null && newChannel !== null) {
+        if (oldChannel === newChannel || oldChannelObj.name === newChannelObj.name) return;
         sendMessageToChannel(
             client,
             vcMonitoringChannelId,
