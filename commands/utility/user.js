@@ -72,7 +72,7 @@ module.exports = {
                     })
                     .then((res) => {
                         const expireDate = new Date(counter.lastResetTime);
-                        expireDate.setHours(counter.lastResetTime.getHours() + 24);
+                        expireDate.setHours(counter.lastResetTime.getHours() + 22);
                         const { days, hours, minutes } = convertMsToDHMS(expireDate - new Date());
                         const diffStr = (days > 0 ? `${days} 天 ` : '') + (hours > 0 ? `${hours} 小时 ` : '') + (minutes > 0 ? `${minutes} 分钟 ` : '') + '后';
 
