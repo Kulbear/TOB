@@ -116,6 +116,17 @@ async function getInteractionUserProfile(interaction, supabase) {
                     const counter = new Counter();
                     if (res.data.length !== 0) {
                         counter.updateAttributeFromStore(res.data[0]);
+
+                        const now = new Date();
+                        if (counter.lastResetTime === null || now - counter.lastResetTime > 79200000) {
+                            counter.resetDaily();
+                            supabase.from('Counter').update(counter.returnAttributeToStore()).eq('dcId', player.dcId)
+                                .then((res) => {
+                                    if (res.error !== null) {
+                                        console.error(res.error);
+                                    }
+                                });
+                        }
                     }
                     else {
                         counter.setDcId(player.dcId);
@@ -168,8 +179,8 @@ async function accumulateExp(client, supabase, userId, exp, expDailyLimit, count
                 console.debug('[DEBUG][accumulateExp] Counter found: ', counter.returnAttributeToStore());
                 // check if need reset
                 const today = new Date();
-                // 86400000 is 24 hours in milliseconds
-                if (today - counter.lastResetTime > 86400000) {
+                // 79200000 is 22 hours in milliseconds
+                if (today - counter.lastResetTime > 79200000) {
                     console.debug('[DEBUG][accumulateExp] Reset Daily Counter', today);
                     counter.resetDaily();
                 }
