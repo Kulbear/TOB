@@ -8,13 +8,18 @@ const { debugChannelId } = require('../../config.json');
 const { dailyTextChatExpLimit, dailyVoiceChatExpLimit } = require('../../botConfig.json');
 const { convertMsToDHMS } = require('../../utility/helpers.js');
 const { buildUserProfileEmbed } = require('../../utility/embeds.js');
+const {
+    gameRoleIDs,
+    guideReadRoleID,
+    ruleReadRoleID,
+} = require('./botConfig.json');
 
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('user')
         .setDescription('Provides information about the user.'),
     async execute(interaction, supabase) {
-
+        const member = interaction.member;
         const userNickname = interaction.member.nickname ? interaction.member.nickname : interaction.user.globalName;
         const userTag = interaction.user.tag;
         const client = interaction.user.client;
@@ -32,23 +37,42 @@ module.exports = {
                     return { payload: null, counter: null };
                 }
                 else {
-                    // send a post request to the python server at the given endpoint
-                    // http://127.0.0.1:5000/profile_image
-                    // the python server will return a response, check the status code
-                    // if the status code is 200, then the image is successfully processed
-                    // otherwise the image is not processed successfully
-                    const payload = {
-                        dcName: userNickname,
-                        dcId: player.dcId,
-                        dcTag: userTag,
-                        level: player.level,
-                        expCurrentLevel: ExpLevelMapping[player.level],
-                        expCurrentUser: player.expCurrentLevel,
-                        tier: player.role,
-                        avatarId: interaction.user.avatar,
-                    };
+                    // now check if user is qualified to get a profile card
+                    let validRoleCounter = 0;
+                    // here we want to check if a member has at least 2 of the game roles
+                    // if they do, we want to log their tag
+                    for (const roleID in gameRoleIDs) {
+                        if (member.roles.cache.has(roleID)) {
+                            validRoleCounter++;
+                        }
+                    }
+                    if (member.roles.cache.has(ruleReadRoleID) && member.roles.cache.has(guideReadRoleID) && validRoleCounter >= 3) {
+                        const payload = {
+                            dcName: userNickname,
+                            dcId: player.dcId,
+                            dcTag: userTag,
+                            level: player.level,
+                            expCurrentLevel: ExpLevelMapping[player.level],
+                            expCurrentUser: player.expCurrentLevel,
+                            tier: player.role,
+                            avatarId: interaction.user.avatar,
+                        };
+                        return { payload: payload, counter: counter };
+                    }
+                    else {
+                        const payload = {
+                            dcName: userNickname,
+                            dcId: player.dcId,
+                            dcTag: userTag,
+                            level: 0,
+                            expCurrentLevel: 0,
+                            expCurrentUser: 0,
+                            tier: player.role,
+                            avatarId: interaction.user.avatar,
+                        };
+                        return { payload: payload, counter: counter };
+                    }
 
-                    return { payload: payload, counter: counter };
                 }
             })
             .then((res) => {
