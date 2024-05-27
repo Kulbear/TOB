@@ -1,10 +1,11 @@
 {
-    "dailyTextChatExpLimit": 50,
-    "dailyVoiceChatExpLimit": 50,
+    "dailyTextChatExpLimit": 10,
+    "dailyVoiceChatExpLimit": 90,
     "numMinuteVoiceChatExpIncrease": 5,
     
     "guideReadRoleID": "1215766168674238524",
     "ruleReadRoleID": "1217468916540903484",
+
     "gameRoleIDs": {
         "1240038377991049337": "Diablo IV 暗黑破坏神4",
         "1238479313238495332": "Ark: Survival Ascended 方舟: 生存飞升",

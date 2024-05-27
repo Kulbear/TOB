@@ -12,7 +12,7 @@ const {
     gameRoleIDs,
     guideReadRoleID,
     ruleReadRoleID,
-} = require('./botConfig.json');
+} = require('../../botConfig.json');
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -111,7 +111,7 @@ module.exports = {
                         });
 
                         if (res.status === 200) {
-                            const replayStr = payload.level === 0 ? 'TOB 刚刚在堆积如山的资料中翻出了你的档案...（你的经验和等级仍在正常持续积累，但需要完成初始任务来查看完整资料卡）' : 'TOB 刚刚在堆积如山的资料中翻出了你的档案...';
+                            const replayStr = payload.level === 0 ? 'TOB 刚刚在堆积如山的资料中翻出了你的档案...\n根据资料显示，你已有的经验和等级数据保存完好，但你需要完成初始任务来继续积累经验）\n1. 阅读【社区规则】并点击下方反应\n2. 阅读【频道指南】并点击下方反应\n3. 通过【领身份组】获取至少三个游戏的身份组' : 'TOB 刚刚在堆积如山的资料中翻出了你的档案...';
                             return interaction.reply({
                                 content: replayStr,
                                 ephemeral: false,

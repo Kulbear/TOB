@@ -5,11 +5,15 @@ const { accumulateExp } = require('./playerProfile.js');
 const {
     dailyVoiceChatExpLimit,
     numMinuteVoiceChatExpIncrease,
+    gameRoleIDs,
+    ruleReadRoleID,
+    guideReadRoleID,
 } = require('../botConfig.json');
 
 async function onVoiceChannelUserActivity(client, supabase, userId, activity) {
     // find the user in the guild by userID
-    const dcTag = client.users.cache.get(userId).username;
+    const user = client.users.cache.get(userId);
+    const dcTag = user.username;
     const voiceActRecord = new VoiceChannelActivityRecord(userId, dcTag, activity, new Date());
 
     if (activity === 'UserJoinVC') {
@@ -46,9 +50,22 @@ async function onVoiceChannelUserActivity(client, supabase, userId, activity) {
                 console.debug(`[DEBUG][onVoiceChannelUserActivity] User <@${userId}> has been in the voice channel for ${userActivityDuration} ms.`);
 
                 // accumulate exp
-                const exp = Math.floor(userActivityDuration / (1 * 60 * 1000 * numMinuteVoiceChatExpIncrease));
-                const counterKey = 'voiceChatDailyCounter';
-                accumulateExp(client, supabase, userId, exp, dailyVoiceChatExpLimit, counterKey);
+                const member = user;
+                // now check if user is qualified to get a profile card
+                let validRoleCounter = 0;
+                // here we want to check if a member has at least 2 of the game roles
+                // if they do, we want to log their tag
+                for (const roleID in gameRoleIDs) {
+                    if (member.roles.cache.has(roleID)) {
+                        validRoleCounter++;
+                    }
+                }
+                if (member.roles.cache.has(ruleReadRoleID) && member.roles.cache.has(guideReadRoleID) && validRoleCounter >= 3) {
+                    const exp = Math.floor(userActivityDuration / (1 * 60 * 1000 * numMinuteVoiceChatExpIncrease));
+                    const counterKey = 'voiceChatDailyCounter';
+                    accumulateExp(client, supabase, userId, exp, dailyVoiceChatExpLimit, counterKey);
+                }
+
 
                 supabase.from('VoiceChannelActivityRecord').delete().eq('dcId', userId)
                     .then((res) => {
