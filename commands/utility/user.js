@@ -111,8 +111,9 @@ module.exports = {
                         });
 
                         if (res.status === 200) {
+                            const replayStr = payload.level === 0 ? 'TOB 刚刚在堆积如山的资料中翻出了你的档案...（你的经验和等级仍在正常持续积累，但需要完成初始任务来查看完整资料卡）' : 'TOB 刚刚在堆积如山的资料中翻出了你的档案...';
                             return interaction.reply({
-                                content: 'TOB 刚刚在堆积如山的资料中翻出了你的档案...',
+                                content: replayStr,
                                 ephemeral: false,
                                 embeds: [embed],
                                 files: [profileCardImage],
