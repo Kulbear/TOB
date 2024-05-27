@@ -1,5 +1,7 @@
 const { accumulateExp } = require('./playerProfile.js');
 
+const { guildId } = require('../config.json');
+
 const {
     dailyTextChatExpLimit,
     gameRoleIDs,
@@ -11,9 +13,7 @@ async function onUserMessageCreate(client, supabase, message) {
     console.debug('[DEBUG][onUserMessageCreate]', message.content);
 
     const userId = message.author.id;
-
-
-    const member = message.author;
+    const member = client.guilds.cache.get(guildId).members.cache.get(userId);
     // now check if user is qualified to get a profile card
     let validRoleCounter = 0;
     // here we want to check if a member has at least 2 of the game roles

@@ -10,9 +10,12 @@ const {
     guideReadRoleID,
 } = require('../botConfig.json');
 
+const { guildId } = require('../config.json');
+
+
 async function onVoiceChannelUserActivity(client, supabase, userId, activity) {
     // find the user in the guild by userID
-    const user = client.users.cache.get(userId);
+    const user = client.guilds.cache.get(guildId).members.cache.get(userId);
     const dcTag = user.username;
     const voiceActRecord = new VoiceChannelActivityRecord(userId, dcTag, activity, new Date());
 
