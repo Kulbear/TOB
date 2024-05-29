@@ -12,6 +12,7 @@ const {
     gameRoleIDs,
     guideReadRoleID,
     ruleReadRoleID,
+    botCommandChannel,
 } = require('../../botConfig.json');
 
 module.exports = {
@@ -23,6 +24,15 @@ module.exports = {
         const userNickname = interaction.member.nickname ? interaction.member.nickname : interaction.user.globalName;
         const userTag = interaction.user.tag;
         const client = interaction.user.client;
+
+        // get the channel id where the interaction is created
+        if (interaction.channelId !== botCommandChannel) {
+            await interaction.reply({
+                content: `由于 TOB 的放射性危害，有关部门已经规定:\nTOB 的 \`/user\` 指令需要前往 <#${botCommandChannel}> 执行！`,
+                ephemeral: true,
+            });
+            return;
+        }
 
         getInteractionUserProfile(interaction, supabase)
             .then((res) => {

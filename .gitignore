@@ -131,3 +131,4 @@ dist
 
 # contains bot credentials
 config.json
+*.jpg
