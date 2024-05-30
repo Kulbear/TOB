@@ -1,7 +1,11 @@
 const { SlashCommandBuilder } = require('discord.js');
 const { Player } = require('../../models/player.js');
 const { ExpModLog } = require('../../models/log.js');
-const { missionAdminRoleID } = require('../../botConfig.json');
+const {
+    missionAdminRoleID,
+    expLogBroadcastChannel,
+} = require('../../botConfig.json');
+const { sendMessageToChannel } = require('../../utility/guildMessages.js');
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -34,18 +38,21 @@ module.exports = {
             log.setTargetPlayerId(userDCTag);
 
             // find the user from the database
-            supabase.from('Player').select().eq('dcTag', interaction.user.username).eq('guildId', guild.id)
+            supabase.from('Player').select().eq('dcTag', userDCTag).eq('guildId', guild.id)
                 .then((res) => {
                     if (res.data.length === 0) {
                         console.debug(`[DEBUG][Slash Command][expmod] ${userDCTag} is not found in the store.`);
-                        return null;
+                        interaction.reply({
+                            content: `TOB 没有找到 ${userDCTag} 的数据，你是不是秀逗了？`,
+                            ephemeral: true,
+                        });
                     }
                     else {
                         const player = new Player(res.data[0].dcId, res.data[0].dcTag, guild.id);
                         player.updateAttributeFromStore(res.data[0]);
                         player.updateExp(expAmt);
                         // also update the player profile
-                        supabase.from('Player').update(player.returnAttributeToStore()).eq('dcTag', interaction.user.username).eq('guildId', guild.id)
+                        supabase.from('Player').upsert(player.returnAttributeToStore()).eq('dcTag', interaction.user.username).eq('guildId', guild.id)
                             .then((res) => {
                                 if (res.error !== null) {
                                     console.error(res.error);
@@ -58,8 +65,13 @@ module.exports = {
                                                 console.error(res.error);
                                             }
                                             else {
+                                                sendMessageToChannel(
+                                                    interaction.user.client,
+                                                    expLogBroadcastChannel,
+                                                    `<@${interaction.user.id}> 成功变更了 <@${userDCTag}> 的经验值 ${expAmt} 点！`,
+                                                );
                                                 interaction.reply({
-                                                    content: `成功变更了 ${userDCTag} 的经验值 ${expAmt} 点！`,
+                                                    content: `你成功变更了 ${userDCTag} 的经验值 ${expAmt} 点！`,
                                                     ephemeral: false,
                                                 });
                                             }
