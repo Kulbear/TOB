@@ -21,10 +21,12 @@ module.exports = {
         .setDescription('Provides information about the user.'),
     async execute(interaction, supabase) {
         const member = interaction.member;
-        const userNickname = interaction.member.nickname ? interaction.member.nickname : interaction.user.globalName;
+        let userNickname = interaction.member.nickname ? interaction.member.nickname : interaction.user.globalName;
+        if (!userNickname) {
+            userNickname = interaction.user.username;
+        }
         const userTag = interaction.user.tag;
         const client = interaction.user.client;
-
         // get the channel id where the interaction is created
         if (interaction.channelId !== botCommandChannel) {
             await interaction.reply({
@@ -138,7 +140,7 @@ module.exports = {
                     });
             })
             .then(() => {
-                fs.unlink(`python/profile_${userTag}.jpg`, () => { return; });
+                // fs.unlink(`python/profile_${userTag}.jpg`, () => { return; });
             })
             .catch((err) => {
                 console.error(err);
