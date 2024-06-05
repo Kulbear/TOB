@@ -32,6 +32,18 @@ async function addUserToStore(supabase, member) {
         });
 }
 
+async function updateUserInStore(supabase, member) {
+    const guild = member.guild;
+    console.debug('[DEBUG][updateUserInStore]', member.user.tag, guild.id);
+    const player = new Player(member.user.id, member.user.tag, guild.id);
+    supabase.from('Player').update({ 'dcTag': player.dcTag }).eq('dcId', player.dcId).eq('guildId', guild.id)
+        .then((res) => {
+            if (res.error !== null) {
+                console.error(res.error);
+            }
+        });
+}
+
 async function onUserAddToGuild(supabase, member) {
     if (member.user.bot) {
         return;
@@ -76,6 +88,9 @@ async function onGuildAvailableBatchInitUsers(supabase, guild) {
                     }
                     if (res.data.length === 0) {
                         addUserToStore(supabase, member);
+                    }
+                    else {
+                        updateUserInStore(supabase, member);
                     }
                 });
         });
