@@ -6,6 +6,7 @@ class ExpModLog {
         this.updatedBy = null;
         this.note = null;
         this.targetPlayerId = null;
+        this.targetPlayerDcId = null;
     }
 
     setMissionId(missionId) {
@@ -32,6 +33,10 @@ class ExpModLog {
         this.targetPlayerId = targetPlayerId;
     }
 
+    setTargetPlayerDcId(targetPlayerDcId) {
+        this.targetPlayerDcId = targetPlayerDcId;
+    }
+
     getid() {
         return this.missionId;
     }
@@ -56,6 +61,10 @@ class ExpModLog {
         return this.targetPlayerId;
     }
 
+    getTargetPlayerDcId() {
+        return this.targetPlayerDcId;
+    }
+
     updateAttributeFromStore(attributes) {
         this.missionId = attributes['missionId'];
         this.expModAmt = attributes['expModAmt'];
@@ -63,6 +72,7 @@ class ExpModLog {
         this.updatedBy = attributes['updatedBy'];
         this.note = attributes['note'];
         this.targetPlayerId = attributes['targetPlayerId'];
+        this.targetPlayerDcId = attributes['targetPlayerDcId'];
     }
 
     returnAttributeToStore() {
@@ -72,6 +82,7 @@ class ExpModLog {
             'updatedBy': this.updatedBy,
             'note': this.note,
             'targetPlayerId': this.targetPlayerId,
+            'targetPlayerDcId': this.targetPlayerDcId,
         };
     }
 }

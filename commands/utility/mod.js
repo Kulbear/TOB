@@ -50,6 +50,7 @@ module.exports = {
                     else {
                         const player = new Player(res.data[0].dcId, res.data[0].dcTag, guild.id);
                         player.updateAttributeFromStore(res.data[0]);
+                        log.setTargetPlayerDcId(player.dcId);
                         player.updateExp(expAmt);
                         // also update the player profile
                         supabase.from('Player').upsert(player.returnAttributeToStore()).eq('dcTag', interaction.user.username).eq('guildId', guild.id)
