@@ -18,7 +18,7 @@ const {
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('user')
-        .setDescription('Provides information about the user.'),
+        .setDescription('Provides profile card for the user.'),
     async execute(interaction, supabase) {
         const member = interaction.member;
         let userNickname = interaction.member.nickname ? interaction.member.nickname : interaction.user.globalName;

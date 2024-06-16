@@ -22,6 +22,11 @@ module.exports = {
     async execute(interaction, supabase) {
         if (interaction.options.getString('ops') === 'publish') {
             console.debug('[DEBUG] "/quest publish" command received.');
+
+            const modal = buildQuestPublishModal();
+
+            // expected to be handled by onPublishQuestModalSubmit
+            interaction.showModal(modal);
         }
         if (interaction.options.getString('ops') === 'review') {
             console.debug('[DEBUG] "/quest review" command received.');
