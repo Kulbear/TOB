@@ -59,7 +59,41 @@ function buildQuestPublishModal() {
     return modal;
 }
 
+function buildApproveCompletionModal(questId, dcId) {
+    const modal = new ModalBuilder()
+        .setCustomId('approveCompletionModal')
+        .setTitle('批准任务完成');
+
+    const questIdInput = new TextInputBuilder()
+        .setCustomId('questIdInput')
+        .setLabel('任务ID（不要更改）')
+        .setValue(questId)
+        .setStyle(TextInputStyle.Short);
+
+    const questSubmitterInput = new TextInputBuilder()
+        .setCustomId('questSubmitterInput')
+        .setLabel('提交者（不要更改）')
+        .setValue(dcId)
+        .setStyle(TextInputStyle.Short);
+
+    const questRewardInput = new TextInputBuilder()
+        .setCustomId('questRewardInput')
+        .setLabel('任务奖励')
+        .setPlaceholder('奖励经验值，必须为数字')
+        .setStyle(TextInputStyle.Short)
+        .setMaxLength(2500)
+        .setMinLength(2);
+
+    modal.addComponents(
+        new ActionRowBuilder().addComponents(questIdInput),
+        new ActionRowBuilder().addComponents(questSubmitterInput),
+        new ActionRowBuilder().addComponents(questRewardInput),
+    );
+
+    return modal;
+}
 
 module.exports = {
     buildQuestPublishModal,
+    buildApproveCompletionModal,
 };

@@ -15,6 +15,8 @@ const {
 const {
     onPublishQuestModalSubmit,
     onQuestInfoButtonClick,
+    onQuestApproveModalSubmit,
+    onQuestInstanceInfoButtonClick,
 } = require('./utility/questHelper.js');
 
 const {
@@ -152,6 +154,9 @@ client.on(Events.InteractionCreate, async (interaction) => {
         if (interaction.customId === 'publishQuestModal') {
             onPublishQuestModalSubmit(interaction, supabase);
         }
+        if (interaction.customId === 'approveCompletionModal') {
+            onQuestApproveModalSubmit(interaction, supabase);
+        }
         return;
     }
     if (interaction.isButton()) {
@@ -162,6 +167,14 @@ client.on(Events.InteractionCreate, async (interaction) => {
             interaction.customId === 'nextQuest'
         ) {
             onQuestInfoButtonClick(interaction, supabase);
+        }
+        if (
+            interaction.customId === 'approveCompletion' ||
+            interaction.customId === 'rejectCompletion' ||
+            interaction.customId === 'previousQuestReview' ||
+            interaction.customId === 'nextQuestReview'
+        ) {
+            onQuestInstanceInfoButtonClick(interaction, supabase);
         }
     }
 

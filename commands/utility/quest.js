@@ -8,9 +8,11 @@ const {
 const {
     buildQuestInfoEmbed,
     buildQuestListInfoEmbed,
+    buildQuestReviewListInfoEmbed,
 } = require('../../utility/embeds.js');
 const {
     buildQuestInfoButtonRow,
+    buildQuestReviewButtonRow,
 } = require('../../utility/componentUtils.js');
 const {
     Player,
@@ -55,6 +57,39 @@ module.exports = {
         }
         if (interaction.options.getString('ops') === 'review') {
             console.debug('[DEBUG] "/quest review" command received.');
+
+            // const now = new Date();
+            // select quest that is not expired based on the expiredAt column, which is a datetime column
+            supabase.from('QuestInstance').select('*').eq('completion', false).eq('needReview', true)
+                .then((res) => {
+                    if (res.error !== null) {
+                        botErrorReply(interaction);
+                    }
+                    else {
+                        return res['data'];
+                    }
+                })
+                .then((data) => {
+                    if (data && data.length > 0) {
+                        const availableQuestData = data;
+                        const embed = buildQuestReviewListInfoEmbed(interaction, availableQuestData, 1);
+
+                        const actionRow = buildQuestReviewButtonRow(1, availableQuestData.length, 1);
+
+                        interaction.reply({
+                            content: '下列是可审核的任务列表。\n可通过点击下方按钮查看不同任务。',
+                            ephemeral: true,
+                            embeds: [embed],
+                            components: [actionRow],
+                        });
+                    }
+                    else {
+                        interaction.reply({
+                            content: '现在没有可审核任务。',
+                            ephemeral: true,
+                        });
+                    }
+                });
         }
         if (interaction.options.getString('ops') === 'complete') {
             console.debug('[DEBUG] "/quest complete" command received.');
@@ -88,7 +123,7 @@ module.exports = {
                     else {
                         // notify the admin channel
                         const questId = player.currentTaskId;
-                        supabase.from('QuestInstance').select().eq('dcId', player.dcId).eq('questId', questId)
+                        supabase.from('QuestInstance').select().eq('dcId', player.dcId).eq('questId', questId).eq('completion', false)
                             .then((res) => {
                                 if (res.data.length === 0) {
                                     console.debug(`[DEBUG][Quest Complete] ${player.dcTag} has a task but the task is not found in the store.`);
@@ -112,7 +147,7 @@ module.exports = {
                                     supabase.from('QuestInstance').update({ 'needReview': true }).eq('dcId', player.dcId).eq('questId', questId).eq('completion', false)
                                         .then((res) => {
                                             if (res.error !== null) {
-                                                botErrorReply();
+                                                botErrorReply(interaction);
                                             }
                                         });
                                 }
@@ -247,6 +282,57 @@ module.exports = {
                                     });
                                 }
                             });
+                    }
+                });
+        }
+        if (interaction.options.getString('ops') === 'abandon') {
+            console.debug('[DEBUG] "/quest abandon" command received.');
+
+            const user = interaction.user;
+            const guild = interaction.guild;
+
+            supabase.from('Player').select().eq('dcId', user.id).eq('guildId', guild.id)
+                .then((res) => {
+                    if (res.data.length === 0) {
+                        console.debug(`[DEBUG][Quest Abandon] ${user.tag} is not found in the store.`);
+                        return null;
+                    }
+                    else {
+                        const player = new Player(res.data[0].dcId, res.data[0].dcTag, guild.id);
+                        player.updateAttributeFromStore(res.data[0]);
+                        return player;
+                    }
+                })
+                .then((player) => {
+                    const currentTaskId = player.currentTaskId;
+                    if (currentTaskId === null || currentTaskId === '') {
+                        interaction.reply({
+                            content: '你没有正在进行的任务！',
+                            ephemeral: true,
+                        });
+                    }
+                    else {
+                        supabase.from('Player').update({ 'currentTaskId': null }).eq('dcId', player.dcId).eq('guildId', guild.id)
+                            .then((res) => {
+                                if (res.error !== null) {
+                                    botErrorReply(interaction);
+                                }
+                            });
+
+                        supabase.from('QuestInstance').update({ 'failAt': new Date(), 'completion': true }).eq('dcId', player.dcId).eq('questId', currentTaskId).eq('completion', false)
+                            .then((res) => {
+                                if (res.error !== null) {
+                                    botErrorReply(interaction);
+                                }
+                                else {
+                                    interaction.reply({
+                                        content: '你当前的任务已经被放弃！',
+                                        ephemeral: true,
+                                    });
+                                }
+                            });
+
+
                     }
                 });
         }

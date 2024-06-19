@@ -1,7 +1,6 @@
 const { EmbedBuilder } = require('discord.js');
 
 function buildQuestInfoEmbed(questToShow) {
-    console.log(questToShow);
     const questName = questToShow['name'];
     const questDescription = questToShow['description'];
     const author = questToShow['createdBy'];
@@ -22,7 +21,6 @@ function buildQuestInfoEmbed(questToShow) {
             text: '🤖 TOB is watching you!',
         });
 
-    console.log(embed);
     return embed;
 }
 
@@ -41,6 +39,44 @@ function buildUserProfileEmbed(payload) {
         .setTimestamp()
         .setFooter({
             text: '🤖 TOB is watching you!',
+        });
+
+    return embed;
+}
+
+function buildQuestReviewListInfoEmbed(
+    interaction,
+    questsToShow,
+    questIdx = 1,
+) {
+    console.log(questsToShow);
+    const questToShow = questsToShow[questIdx - 1];
+    const questId = questToShow['questId'];
+    const submitter = questToShow['dcId'];
+
+    const embed = new EmbedBuilder()
+        .setColor(0x0099ff)
+        .setTitle(`任务审核 - ${questId}`)
+        .setAuthor({
+            name: interaction.guild.members.cache.get(submitter).nickname,
+            iconURL: `https://cdn.discordapp.com/avatars/${submitter}/${interaction.member.user.avatar}.png`,
+            url: `https://discord.com/users/${submitter}`,
+        })
+        .addFields({
+            name: '任务 ID',
+            value: questId,
+        },
+        {
+            name: '提交人',
+            value: `<@${submitter}>`,
+        },
+        {
+            name: '任务列表顺序',
+            value: `${questIdx}`,
+        })
+        .setTimestamp()
+        .setFooter({
+            text: `共${questsToShow.length}个待审核任务，这是第${questIdx}个任务`,
         });
 
     return embed;
@@ -102,4 +138,5 @@ module.exports = {
     buildUserProfileEmbed,
     buildQuestInfoEmbed,
     buildQuestListInfoEmbed,
+    buildQuestReviewListInfoEmbed,
 };
