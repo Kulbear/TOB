@@ -16,6 +16,7 @@ const {
 } = require('../../models/player.js');
 const {
     Quest,
+    QuestInstance,
 } = require('../../models/quest.js');
 const {
     missionBroadcastChannel,
@@ -84,6 +85,37 @@ module.exports = {
                     else {
                         // notify the admin channel
                         const questId = player.currentTaskId;
+                        supabase.from('QuestInstance').select().eq('dcId', player.dcId).eq('questId', questId)
+                            .then((res) => {
+                                if (res.data.length === 0) {
+                                    console.debug(`[DEBUG][Quest Complete] ${player.dcTag} has a task but the task is not found in the store.`);
+                                    return null;
+                                }
+                                else {
+                                    const quest = new QuestInstance(questId, player.dcId);
+                                    quest.updateAttributeFromStore(res.data[0]);
+                                    return quest;
+                                }
+                            })
+                            .then((quest) => {
+                                if (quest === null) {
+                                    interaction.reply({
+                                        content: '任务实例出现了神秘的错误，请联系管理员！',
+                                        ephemeral: true,
+                                    });
+                                }
+                                else {
+                                    quest.needReview = true;
+                                    supabase.from('QuestInstance').update({ 'needReview': true }).eq('dcId', player.dcId).eq('questId', questId).eq('completion', false)
+                                        .then((res) => {
+                                            if (res.error !== null) {
+                                                botErrorReply();
+                                            }
+                                        });
+                                }
+                            });
+
+
                         supabase.from('Quest').select().eq('questId', questId)
                             .then((res) => {
                                 if (res.data.length === 0) {

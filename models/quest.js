@@ -250,6 +250,7 @@ class QuestInstance {
         this.completion = false;
         this.rewardCoefficient = QuestExpRewardCoefficient.REWARD_NORMAL;
         this.rewardExp = null;
+        this.needReview = false;
     }
 
     /**
@@ -259,13 +260,14 @@ class QuestInstance {
     updateAttributeFromStore(attributes) {
         this.questId = attributes['questId'];
         this.dcId = attributes['dcId'];
-        this.acceptedAt = attributes['acceptedAt'];
-        this.completedAt = attributes['completedAt'];
-        this.failedAt = attributes['failedAt'];
-        this.createAt = attributes['createAt'];
+        this.acceptedAt = new Date(attributes['acceptedAt']);
+        this.completedAt = new Date(attributes['completedAt']);
+        this.failedAt = new Date(attributes['failedAt']);
+        this.createAt = new Date(attributes['createAt']);
         this.completion = attributes['completion'];
         this.rewardCoefficient = attributes['rewardCoefficient'];
         this.rewardExp = attributes['rewardExp'];
+        this.needReview = attributes['needReview'];
     }
 
     /**
@@ -282,6 +284,7 @@ class QuestInstance {
             'completion': this.completion,
             'rewardCoefficient': this.rewardCoefficient,
             'rewardExp': this.rewardExp,
+            'needReview': this.needReview,
         };
     }
 
