@@ -6,6 +6,12 @@ const {
     buildQuestPublishModal,
 } = require('../../utility/modalUtils.js');
 const {
+    buildQuestListInfoEmbed,
+} = require('../../utility/embeds.js');
+const {
+    buildQuestInfoButtonRow,
+} = require('../../utility/componentUtils.js');
+const {
     Player,
 } = require('../../models/player.js');
 const {
@@ -16,6 +22,7 @@ const {
 } = require('../../botConfig.json');
 const {
     sendMessageToChannel,
+    botErrorReply,
 } = require('../../utility/guildMessages.js');
 
 module.exports = {
@@ -114,6 +121,41 @@ module.exports = {
         }
         if (interaction.options.getString('ops') === 'list') {
             console.debug('[DEBUG] "/quest list" command received.');
+
+            const now = new Date();
+            // select quest that is not expired based on the expiredAt column, which is a datetime column
+            supabase.from('Quest').select('*').filter('expireAt', 'gte', JSON.stringify(now))
+                .then((res) => {
+                    if (res.error !== null) {
+                        botErrorReply(interaction);
+                    }
+                    else {
+                        return res['data'];
+                    }
+                })
+                .then((data) => {
+                    if (data && data.length > 0) {
+                        const availableQuestData = data.filter((quest) => {
+                            return quest['repeatable'] === true || (quest['repeatable'] === false && quest['acceptedBy'].length === 0);
+                        });
+                        const embed = buildQuestListInfoEmbed(interaction, availableQuestData, 1, '接受');
+
+                        const actionRow = buildQuestInfoButtonRow(1, availableQuestData.length, 1);
+
+                        interaction.reply({
+                            content: '下列是可接受的任务列表。 \n可通过点击下方按钮查看不同任务。',
+                            ephemeral: true,
+                            embeds: [embed],
+                            components: [actionRow],
+                        });
+                    }
+                    else {
+                        interaction.reply({
+                            content: '现在没有可接任务。',
+                            ephemeral: true,
+                        });
+                    }
+                });
         }
     },
 };

@@ -72,7 +72,7 @@ class Quest {
         this.name = null;
         this.description = null;
         this.multipletakers = true;
-        this.repeatable = false;
+        this.repeatable = true;
         this.rewardText = null;
         this.durationTextRaw = null;
 
@@ -230,6 +230,93 @@ class Quest {
 }
 
 
+/**
+ * QuestInstance is the class that contains the instance of data related to a quest accepted by the user.
+ * Each Quest object can be accepted by multiple users, and each user will have their own corresponding QuestInstance object.
+ */
+class QuestInstance {
+    /**
+	 * Create a QuestInstance.
+	 * @param {string} questId - The ID of the quest.
+	 * @param {string} dcId - The ID of the user.
+	 */
+    constructor(questId, dcId) {
+        this.questId = questId;
+        this.dcId = dcId;
+        this.acceptAt = null;
+        this.completeAt = null;
+        this.failAt = null;
+        this.createAt = null;
+        this.completion = false;
+        this.rewardCoefficient = QuestExpRewardCoefficient.REWARD_NORMAL;
+        this.rewardExp = null;
+    }
+
+    /**
+	 * Update the attributes of the QuestInstance from a store.
+	 * @param {Object} attributes - The attributes to update.
+	 */
+    updateAttributeFromStore(attributes) {
+        this.questId = attributes['questId'];
+        this.dcId = attributes['dcId'];
+        this.acceptedAt = attributes['acceptedAt'];
+        this.completedAt = attributes['completedAt'];
+        this.failedAt = attributes['failedAt'];
+        this.createAt = attributes['createAt'];
+        this.completion = attributes['completion'];
+        this.rewardCoefficient = attributes['rewardCoefficient'];
+        this.rewardExp = attributes['rewardExp'];
+    }
+
+    /**
+	 * Return the attributes of the QuestInstance to be stored.
+	 * @returns {Object} - The attributes of the QuestInstance.
+	 */
+    returnAttributeToStore() {
+        return {
+            'questId': this.questId,
+            'dcId': this.dcId,
+            'acceptAt': this.acceptAt,
+            'completeAt': this.completeAt,
+            'failAt': this.failedAt,
+            'completion': this.completion,
+            'rewardCoefficient': this.rewardCoefficient,
+            'rewardExp': this.rewardExp,
+        };
+    }
+
+    setRewardCoefficient(rewardCoefficient) {
+        this.rewardCoefficient = rewardCoefficient;
+    }
+
+    setRewardExp(rewardExp) {
+        this.rewardExp = rewardExp;
+    }
+
+    /**
+	 * Set the accepted_at attribute to the current time.
+	 */
+    questAcceptAt() {
+        this.acceptAt = getCurrentTime();
+    }
+
+    /**
+	 * Set the completed_at attribute to the current time.
+	 */
+    questCompleteAt() {
+        this.completeAt = getCurrentTime();
+    }
+
+    /**
+	 * Set the failed_at attribute to the current time.
+	 */
+    questFailedAt() {
+        this.failAt = getCurrentTime();
+    }
+}
+
+
 module.exports = {
     Quest,
+    QuestInstance,
 };

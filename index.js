@@ -14,6 +14,7 @@ const {
 
 const {
     onPublishQuestModalSubmit,
+    onQuestInfoButtonClick,
 } = require('./utility/questHelper.js');
 
 const {
@@ -153,7 +154,16 @@ client.on(Events.InteractionCreate, async (interaction) => {
         }
         return;
     }
-
+    if (interaction.isButton()) {
+        if (
+            interaction.customId === 'previousQuest' ||
+            interaction.customId === 'acceptQuest' ||
+            interaction.customId === 'deleteQuest' ||
+            interaction.customId === 'nextQuest'
+        ) {
+            onQuestInfoButtonClick(interaction, supabase);
+        }
+    }
 
     if (!interaction.isCommand()) return;
 
