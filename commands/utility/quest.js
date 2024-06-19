@@ -6,6 +6,7 @@ const {
     buildQuestPublishModal,
 } = require('../../utility/modalUtils.js');
 const {
+    buildQuestInfoEmbed,
     buildQuestListInfoEmbed,
 } = require('../../utility/embeds.js');
 const {
@@ -40,6 +41,8 @@ module.exports = {
                     { name:'review', value:'review' },
                     { name:'complete', value:'complete' },
                     { name:'list', value:'list' },
+                    { name:'info', value:'info' },
+                    { name:'abandon', value:'abandon' },
                 )),
     async execute(interaction, supabase) {
         if (interaction.options.getString('ops') === 'publish') {
@@ -186,6 +189,64 @@ module.exports = {
                             content: '现在没有可接任务。',
                             ephemeral: true,
                         });
+                    }
+                });
+        }
+        if (interaction.options.getString('ops') === 'info') {
+            console.debug('[DEBUG] "/quest info" command received.');
+
+            const user = interaction.user;
+            const guild = interaction.guild;
+
+            supabase.from('Player').select().eq('dcId', user.id).eq('guildId', guild.id)
+                .then((res) => {
+                    if (res.data.length === 0) {
+                        console.debug(`[DEBUG][Quest Info] ${user.tag} is not found in the store.`);
+                        return null;
+                    }
+                    else {
+                        const player = new Player(res.data[0].dcId, res.data[0].dcTag, guild.id);
+                        player.updateAttributeFromStore(res.data[0]);
+                        return player;
+                    }
+                })
+                .then((player) => {
+                    const currentTaskId = player.currentTaskId;
+                    if (currentTaskId === null || currentTaskId === '') {
+                        interaction.reply({
+                            content: '你没有正在进行的任务！',
+                            ephemeral: true,
+                        });
+                    }
+                    else {
+                        supabase.from('Quest').select().eq('questId', currentTaskId)
+                            .then((res) => {
+                                if (res.data.length === 0) {
+                                    console.debug(`[DEBUG][Quest Info] ${player.dcTag} has a task but the task is not found in the store.`);
+                                    return null;
+                                }
+                                else {
+                                    const quest = new Quest();
+                                    quest.updateAttributeFromStore(res.data[0]);
+                                    return quest;
+                                }
+                            })
+                            .then((quest) => {
+                                if (quest === null) {
+                                    interaction.reply({
+                                        content: '任务实例出现了神秘的错误，请联系管理员！',
+                                        ephemeral: true,
+                                    });
+                                }
+                                else {
+                                    const embed = buildQuestInfoEmbed(quest);
+                                    interaction.reply({
+                                        content: '下列是你正在进行的任务信息。',
+                                        ephemeral: true,
+                                        embeds: [embed],
+                                    });
+                                }
+                            });
                     }
                 });
         }

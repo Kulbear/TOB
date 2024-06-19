@@ -106,6 +106,7 @@ async function onQuestInfoButtonClick(interaction, supabase) {
                             }
                         });
                 }
+                // TODO: not used at the moment
                 else if (interaction.customId === 'deleteQuest') {
                     supabase.from('Quest').delete().eq('questId', questId)
                         .then((res) => {

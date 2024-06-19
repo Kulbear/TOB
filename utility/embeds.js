@@ -1,5 +1,30 @@
 const { EmbedBuilder } = require('discord.js');
 
+function buildQuestInfoEmbed(questToShow) {
+    console.log(questToShow);
+    const questName = questToShow['name'];
+    const questDescription = questToShow['description'];
+    const author = questToShow['createdBy'];
+    const questExpireAt = questToShow['expireAt'];
+    const questReward = questToShow['rewardText'];
+
+    const embed = new EmbedBuilder()
+        .setColor(0x0099ff)
+        .setTitle(questName)
+        .setDescription(questDescription)
+        .addFields(
+            { name: '任务截止时间', value: `${questExpireAt}` },
+            { name: '任务发布人', value: `<@${author}>` },
+            { name: '任务奖励', value: questReward },
+        )
+        .setTimestamp()
+        .setFooter({
+            text: '🤖 TOB is watching you!',
+        });
+
+    console.log(embed);
+    return embed;
+}
 
 function buildUserProfileEmbed(payload) {
     const { userNickname, userTag, dailyTextChatExpLimit, dailyVoiceChatExpLimit, counter, diffStr } = payload;
@@ -12,7 +37,11 @@ function buildUserProfileEmbed(payload) {
             { name: '今日语音剩余经验', value: `${dailyVoiceChatExpLimit - counter.voiceChatDailyCounter}`, inline: true },
             { name: '重置时间', value: `${diffStr}`, inline: true },
         )
-        .setColor('#7A76EB');
+        .setColor('#7A76EB')
+        .setTimestamp()
+        .setFooter({
+            text: '🤖 TOB is watching you!',
+        });
 
     return embed;
 }
@@ -34,7 +63,7 @@ function buildQuestListInfoEmbed(
 
     const embed = new EmbedBuilder()
         .setColor(0x0099ff)
-        .setTitle(fromAdmin ? `${questName} - 🌟社区任务` : `${questName} - 👻玩家发布`) 
+        .setTitle(fromAdmin ? `${questName} - 🌟社区任务` : `${questName} - 👻玩家发布`)
         .setAuthor({
             name: interaction.guild.members.cache.get(author).nickname,
             iconURL: `https://cdn.discordapp.com/avatars/${author}/${interaction.member.user.avatar}.png`,
@@ -71,5 +100,6 @@ function buildQuestListInfoEmbed(
 
 module.exports = {
     buildUserProfileEmbed,
+    buildQuestInfoEmbed,
     buildQuestListInfoEmbed,
 };
