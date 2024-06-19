@@ -76,7 +76,7 @@ async function onQuestInstanceInfoButtonClick(interaction, supabase) {
                 else if (interaction.customId === 'rejectCompletion') {
                     console.log(questSubmitter, questId);
                     // TODO: not working update
-                    supabase.from('QuestInstance').update({ 'completion': true, 'needReview': false }).eq('questId', questId).eq('dcId', questSubmitterId)
+                    supabase.from('QuestInstance').update({ 'failAt': new Date(), 'completion': true, 'needReview': false }).eq('questId', questId).eq('dcId', questSubmitterId)
                         .then((res) => {
                             if (res.error !== null) {
                                 botErrorReply(interaction);
@@ -283,6 +283,7 @@ async function onQuestApproveModalSubmit(interaction, supabase) {
     const questReward = interaction.fields.getTextInputValue('questRewardInput');
     const questSubmitterId = questSubmitter.replace('<@', '').replace('>', '');
     const guild = interaction.guild;
+    const client = interaction.client;
     // constructor() {
     //     this.missionId = 0;
     //     this.expModAmt = 0;
@@ -312,7 +313,7 @@ async function onQuestApproveModalSubmit(interaction, supabase) {
             else {
                 console.log('ExpModLog Inserted approveCompletion');
                 // update quest instance
-                supabase.from('QuestInstance').update({ 'completion': true, 'needReview': false }).eq('questId', questId).eq('dcId', questSubmitter)
+                supabase.from('QuestInstance').update({ 'completeAt': new Date(), 'completion': true, 'needReview': false }).eq('questId', questId).eq('dcId', questSubmitter)
                     .then((res) => {
                         if (res.error !== null) {
                             botErrorReply(interaction);
@@ -345,6 +346,11 @@ async function onQuestApproveModalSubmit(interaction, supabase) {
                                                 }
                                                 else {
                                                     console.log('Player approveCompletion');
+                                                    sendMessageToChannel(
+                                                        client,
+                                                        missionBroadcastChannel,
+                                                        `${questSubmitter} 提交的任务 ${questId} 已经被批准！\n奖励 ${questReward} 经验值！`,
+                                                    );
                                                     interaction.reply({
                                                         content: `${questSubmitter} 提交的任务 ${questId} 已经被批准！\n奖励 ${questReward} 经验值！`,
                                                         ephemeral: true,

@@ -242,6 +242,7 @@ class QuestInstance {
 	 */
     constructor(questId, dcId) {
         this.questId = questId;
+        this.name = null;
         this.dcId = dcId;
         this.acceptAt = null;
         this.completeAt = null;
@@ -259,6 +260,7 @@ class QuestInstance {
 	 */
     updateAttributeFromStore(attributes) {
         this.questId = attributes['questId'];
+        this.name = attributes['name'];
         this.dcId = attributes['dcId'];
         this.acceptedAt = new Date(attributes['acceptedAt']);
         this.completedAt = new Date(attributes['completedAt']);
@@ -277,6 +279,7 @@ class QuestInstance {
     returnAttributeToStore() {
         return {
             'questId': this.questId,
+            'name': this.name,
             'dcId': this.dcId,
             'acceptAt': this.acceptAt,
             'completeAt': this.completeAt,
