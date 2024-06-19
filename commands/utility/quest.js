@@ -23,6 +23,7 @@ const {
 } = require('../../models/quest.js');
 const {
     missionBroadcastChannel,
+    missionAdminRoleID,
 } = require('../../botConfig.json');
 const {
     sendMessageToChannel,
@@ -58,38 +59,46 @@ module.exports = {
         if (interaction.options.getString('ops') === 'review') {
             console.debug('[DEBUG] "/quest review" command received.');
 
-            // const now = new Date();
+            if (interaction.member.roles.cache.has(missionAdminRoleID) || interaction.user.id == '1191572677165588538') {
+                // const now = new Date();
             // select quest that is not expired based on the expiredAt column, which is a datetime column
-            supabase.from('QuestInstance').select('*').eq('completion', false).eq('needReview', true)
-                .then((res) => {
-                    if (res.error !== null) {
-                        botErrorReply(interaction);
-                    }
-                    else {
-                        return res['data'];
-                    }
-                })
-                .then((data) => {
-                    if (data && data.length > 0) {
-                        const availableQuestData = data;
-                        const embed = buildQuestReviewListInfoEmbed(interaction, availableQuestData, 1);
+                supabase.from('QuestInstance').select('*').eq('completion', false).eq('needReview', true)
+                    .then((res) => {
+                        if (res.error !== null) {
+                            botErrorReply(interaction);
+                        }
+                        else {
+                            return res['data'];
+                        }
+                    })
+                    .then((data) => {
+                        if (data && data.length > 0) {
+                            const availableQuestData = data;
+                            const embed = buildQuestReviewListInfoEmbed(interaction, availableQuestData, 1);
 
-                        const actionRow = buildQuestReviewButtonRow(1, availableQuestData.length, 1);
+                            const actionRow = buildQuestReviewButtonRow(1, availableQuestData.length, 1);
 
-                        interaction.reply({
-                            content: '下列是可审核的任务列表。\n可通过点击下方按钮查看不同任务。',
-                            ephemeral: true,
-                            embeds: [embed],
-                            components: [actionRow],
-                        });
-                    }
-                    else {
-                        interaction.reply({
-                            content: '现在没有可审核任务。',
-                            ephemeral: true,
-                        });
-                    }
+                            interaction.reply({
+                                content: '下列是可审核的任务列表。\n可通过点击下方按钮查看不同任务。',
+                                ephemeral: true,
+                                embeds: [embed],
+                                components: [actionRow],
+                            });
+                        }
+                        else {
+                            interaction.reply({
+                                content: '现在没有可审核任务。',
+                                ephemeral: true,
+                            });
+                        }
+                    });
+            }
+            else {
+                interaction.reply({
+                    content: '你没有权限执行这个命令！',
+                    ephemeral: true,
                 });
+            }
         }
         if (interaction.options.getString('ops') === 'complete') {
             console.debug('[DEBUG] "/quest complete" command received.');
