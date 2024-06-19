@@ -1,12 +1,63 @@
 // Description: This file contains class definition for the quest related data model.
 
-const { QuestExpRewardCoefficient } = require('./static.js');
 const {
-    generateUniqueID,
-    getCurrentTime,
-    parseDurationText,
-    addTimeDelta,
-} = require('../utility/questHelper.js');
+    QuestExpRewardCoefficient,
+} = require('./static.js');
+
+
+function generateUniqueID(prefix) {
+    // generate a unique ID that start with the prefix and followed by a random text of 8 characters with numbers and letters
+    return prefix + Math.random().toString(36).substring(2, 10);
+}
+
+function getCurrentTime() {
+    return new Date();
+}
+
+function parseDurationText(durationText) {
+    // duration text will be in format of "1w1d2h3m4s"
+    // we will parse this text and calculate the total duration in time delta that can be added to Date() object
+    const duration = {
+        days: 0,
+        hours: 0,
+        minutes: 0,
+        seconds: 0,
+    };
+
+    const durationTextArray = durationText.match(/\d+[wdhms]/g);
+    for (const text of durationTextArray) {
+        const unit = text[text.length - 1];
+        const value = parseInt(text.slice(0, -1));
+        switch (unit) {
+        case 'w':
+            duration.days = value * 7;
+            break;
+        case 'd':
+            duration.days = value;
+            break;
+        case 'h':
+            duration.hours = value;
+            break;
+        case 'm':
+            duration.minutes = value;
+            break;
+        case 's':
+            duration.seconds = value;
+            break;
+        default:
+            break;
+        }
+    }
+    return duration;
+}
+
+function addTimeDelta(currentTime, timeDelta) {
+    currentTime.setDate(currentTime.getDate() + timeDelta.days);
+    currentTime.setHours(currentTime.getHours() + timeDelta.hours);
+    currentTime.setMinutes(currentTime.getMinutes() + timeDelta.minutes);
+    currentTime.setSeconds(currentTime.getSeconds() + timeDelta.seconds);
+    return currentTime;
+}
 
 
 /**
@@ -117,7 +168,9 @@ class Quest {
         if (adminUpdate) {
             console.debug(`[DEBUG][Quest] ${this.questId} is an official quest.`);
             this.setFromAdmin(true);
+            this.setReviewed(true);
             this.setReviewedAt(this.createAt);
+            this.setReviewedBy(this.createdBy);
             this.setApproved(true);
         }
 
