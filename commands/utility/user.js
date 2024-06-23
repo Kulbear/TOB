@@ -1,19 +1,44 @@
-const fs = require('fs');
+const {
+    SlashCommandBuilder,
+    AttachmentBuilder,
+} = require('discord.js');
 
-const { SlashCommandBuilder, AttachmentBuilder } = require('discord.js');
-const { getInteractionUserProfile } = require('../../utility/playerProfile.js');
-const { sendMessageToChannel } = require('../../utility/guildMessages.js');
-const { ExpLevelMapping } = require('../../models/static.js');
-const { debugChannelId } = require('../../config.json');
-const { dailyTextChatExpLimit, dailyVoiceChatExpLimit } = require('../../botConfig.json');
-const { convertMsToDHMS } = require('../../utility/helpers.js');
-const { buildUserProfileEmbed } = require('../../utility/embeds.js');
+const {
+    getInteractionUserProfile,
+} = require('../../utility/playerProfile.js');
+
+const {
+    sendMessageToChannel,
+} = require('../../utility/guildMessages.js');
+
+const {
+    ExpLevelMapping,
+} = require('../../models/static.js');
+
+const {
+    debugChannelId,
+} = require('../../config.json');
+
+const {
+    dailyTextChatExpLimit,
+    dailyVoiceChatExpLimit,
+} = require('../../botConfig.json');
+
+const {
+    convertMsToDHMS,
+} = require('../../utility/helpers.js');
+
+const {
+    buildUserProfileEmbed,
+} = require('../../utility/embeds.js');
+
 const {
     gameRoleIDs,
     guideReadRoleID,
     ruleReadRoleID,
     botCommandChannel,
 } = require('../../botConfig.json');
+
 
 module.exports = {
     data: new SlashCommandBuilder()

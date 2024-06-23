@@ -1,5 +1,11 @@
-const { Player } = require('../models/player.js');
-const { Counter } = require('../models/utility.js');
+const {
+    Player,
+} = require('../models/player.js');
+
+const {
+    Counter,
+} = require('../models/utility.js');
+
 
 async function onGuildAvailableInfoLog(guild) {
     console.debug('[DEBUG][onGuildAvailableInfoLog]');

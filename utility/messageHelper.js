@@ -1,6 +1,10 @@
-const { accumulateExp } = require('./playerProfile.js');
+const {
+    accumulateExp,
+} = require('./playerProfile.js');
 
-const { guildId } = require('../config.json');
+const {
+    guildId,
+} = require('../config.json');
 
 const {
     dailyTextChatExpLimit,
@@ -8,6 +12,7 @@ const {
     ruleReadRoleID,
     guideReadRoleID,
 } = require('../botConfig.json');
+
 
 async function onUserMessageCreate(client, supabase, message) {
     console.debug('[DEBUG][onUserMessageCreate]', message.content);

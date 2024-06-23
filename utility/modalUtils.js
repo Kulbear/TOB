@@ -5,6 +5,7 @@ const {
     ActionRowBuilder,
 } = require('discord.js');
 
+
 function buildQuestPublishModal() {
     const modal = new ModalBuilder()
         .setCustomId('publishQuestModal')
@@ -76,8 +77,8 @@ function buildApproveCompletionModal(questId, dcId, questName) {
         .setValue(questName)
         .setStyle(TextInputStyle.Short);
 
-    const questSubmitterInput = new TextInputBuilder()
-        .setCustomId('questSubmitterInput')
+    const questSubmitterIdInput = new TextInputBuilder()
+        .setCustomId('questSubmitterIdInput')
         .setLabel('提交者（不要更改）')
         .setValue(dcId)
         .setStyle(TextInputStyle.Short);
@@ -93,7 +94,7 @@ function buildApproveCompletionModal(questId, dcId, questName) {
     modal.addComponents(
         new ActionRowBuilder().addComponents(questIdInput),
         new ActionRowBuilder().addComponents(questNameInput),
-        new ActionRowBuilder().addComponents(questSubmitterInput),
+        new ActionRowBuilder().addComponents(questSubmitterIdInput),
         new ActionRowBuilder().addComponents(questRewardInput),
     );
 

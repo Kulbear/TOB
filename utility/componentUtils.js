@@ -1,4 +1,8 @@
-const { ActionRowBuilder, ButtonBuilder } = require('discord.js');
+const {
+    ActionRowBuilder,
+    ButtonBuilder,
+} = require('discord.js');
+
 
 function buildQuestInfoButtonRow(start, end, current) {
     const actionRow = new ActionRowBuilder();

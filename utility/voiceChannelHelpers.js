@@ -1,6 +1,10 @@
-const { VoiceChannelActivityRecord } = require('../models/utility');
+const {
+    VoiceChannelActivityRecord,
+} = require('../models/utility');
 
-const { accumulateExp } = require('./playerProfile.js');
+const {
+    accumulateExp,
+} = require('./playerProfile.js');
 
 const {
     dailyVoiceChatExpLimit,
@@ -10,7 +14,9 @@ const {
     guideReadRoleID,
 } = require('../botConfig.json');
 
-const { guildId } = require('../config.json');
+const {
+    guildId,
+} = require('../config.json');
 
 
 async function onVoiceChannelUserActivity(client, supabase, userId, activity) {

@@ -1,11 +1,20 @@
-const { SlashCommandBuilder } = require('discord.js');
-const { Player } = require('../../models/player.js');
-const { ExpModLog } = require('../../models/log.js');
+const {
+    SlashCommandBuilder,
+} = require('discord.js');
+const {
+    Player,
+} = require('../../models/player.js');
+const {
+    ExpModLog,
+} = require('../../models/log.js');
 const {
     missionAdminRoleID,
     expLogBroadcastChannel,
 } = require('../../botConfig.json');
-const { sendMessageToChannel } = require('../../utility/guildMessages.js');
+const {
+    sendMessageToChannel,
+} = require('../../utility/guildMessages.js');
+
 
 module.exports = {
     data: new SlashCommandBuilder()
