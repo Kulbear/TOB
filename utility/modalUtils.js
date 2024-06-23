@@ -59,7 +59,7 @@ function buildQuestPublishModal() {
     return modal;
 }
 
-function buildApproveCompletionModal(questId, dcId) {
+function buildApproveCompletionModal(questId, dcId, questName) {
     const modal = new ModalBuilder()
         .setCustomId('approveCompletionModal')
         .setTitle('批准任务完成');
@@ -68,6 +68,12 @@ function buildApproveCompletionModal(questId, dcId) {
         .setCustomId('questIdInput')
         .setLabel('任务ID（不要更改）')
         .setValue(questId)
+        .setStyle(TextInputStyle.Short);
+
+    const questNameInput = new TextInputBuilder()
+        .setCustomId('questNameInput')
+        .setLabel('任务名称（不要更改）')
+        .setValue(questName)
         .setStyle(TextInputStyle.Short);
 
     const questSubmitterInput = new TextInputBuilder()
@@ -86,6 +92,7 @@ function buildApproveCompletionModal(questId, dcId) {
 
     modal.addComponents(
         new ActionRowBuilder().addComponents(questIdInput),
+        new ActionRowBuilder().addComponents(questNameInput),
         new ActionRowBuilder().addComponents(questSubmitterInput),
         new ActionRowBuilder().addComponents(questRewardInput),
     );

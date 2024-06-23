@@ -30,14 +30,6 @@ function buildQuestInfoButtonRow(start, end, current) {
 
 function buildQuestReviewButtonRow(start, end, current) {
     const actionRow = new ActionRowBuilder();
-    if (current != start) {
-        actionRow.addComponents(
-            new ButtonBuilder()
-                .setCustomId('previousQuestReview')
-                .setLabel('<- 前一个')
-                .setStyle('Primary'),
-        );
-    }
     actionRow.addComponents(
         new ButtonBuilder()
             .setCustomId('approveCompletion')
@@ -50,6 +42,14 @@ function buildQuestReviewButtonRow(start, end, current) {
             .setLabel('❌ 驳回完成任务')
             .setStyle('Danger'),
     );
+    if (current != start) {
+        actionRow.addComponents(
+            new ButtonBuilder()
+                .setCustomId('previousQuestReview')
+                .setLabel('<- 前一个')
+                .setStyle('Primary'),
+        );
+    }
     if (current != end) {
         actionRow.addComponents(
             new ButtonBuilder()

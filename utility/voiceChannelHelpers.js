@@ -85,6 +85,9 @@ async function onVoiceChannelUserActivity(client, supabase, userId, activity) {
                             console.error(res.error);
                         }
                     });
+            })
+            .catch((err) => {
+                console.log(err);
             });
     }
 

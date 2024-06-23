@@ -2,11 +2,27 @@
 
 const fs = require('node:fs');
 const path = require('node:path');
-const { Client, Collection, Events, GatewayIntentBits } = require('discord.js');
 
-const { token, debugChannelId, vcMonitoringChannelId } = require('./config.json');
-const { supabaseUrl, supabaseKey } = require('./config.json');
-const { createClient } = require('@supabase/supabase-js');
+const {
+    Client,
+    Collection,
+    Events,
+    GatewayIntentBits,
+} = require('discord.js');
+
+const { discordBotToken,
+    debugChannelId,
+    supabaseUrl,
+    supabaseKey,
+} = require('./config.json');
+
+const {
+    vcMonitoringChannelId,
+} = require('./botConfig.json');
+
+const {
+    createClient,
+} = require('@supabase/supabase-js');
 
 const {
     onVoiceChannelUserActivity,
@@ -26,9 +42,13 @@ const {
     onUserRemoveFromGuild,
 } = require('./utility/playerProfile.js');
 
-const { onUserMessageCreate } = require('./utility/messageHelper.js');
+const {
+    onUserMessageCreate,
+} = require('./utility/messageHelper.js');
 
-const { sendMessageToChannel } = require('./utility/guildMessages.js');
+const {
+    sendMessageToChannel,
+} = require('./utility/guildMessages.js');
 
 const supabase = createClient(supabaseUrl, supabaseKey);
 console.debug('[DEBUG] Supabase app initialized...');
@@ -101,7 +121,7 @@ client.on(Events.GuildMemberAdd, async (member) => {
     );
 });
 
-// wher user leave server
+// when user leave server
 client.on(Events.GuildMemberRemove, async (member) => {
     console.debug(`用户 <@${member.user.id}> 刚刚离开了服务器!`);
     onUserRemoveFromGuild(supabase, member);
@@ -112,6 +132,7 @@ client.on(Events.GuildMemberRemove, async (member) => {
     );
 });
 
+// voice channel activity monitorings
 client.on('voiceStateUpdate', (oldState, newState) => {
     const oldChannel = oldState.channelId;
     const newChannel = newState.channelId;
@@ -209,4 +230,4 @@ client.on(Events.InteractionCreate, async (interaction) => {
 });
 
 // Log in to Discord with your client's token
-client.login(token);
+client.login(discordBotToken);

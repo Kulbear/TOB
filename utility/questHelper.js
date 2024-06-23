@@ -40,11 +40,12 @@ async function onQuestInstanceInfoButtonClick(interaction, supabase) {
     const questId = interaction.message.embeds[0].fields[0].value;
     const questIdx = parseInt(interaction.message.embeds[0].fields[2].value);
     const questSubmitter = interaction.message.embeds[0].fields[1].value;
+    const questName = interaction.message.embeds[0].fields[3].value;
     // questSubmitter is something like <@123>, we need to remove <@ and > to get the id
     const questSubmitterId = questSubmitter.replace('<@', '').replace('>', '');
 
-    console.log(questId, questIdx, questSubmitter);
-    // const client = interaction.client;
+    // console.log(questId, questIdx, questSubmitter);
+    const client = interaction.client;
     const guild = interaction.guild;
     // get quest list from the database
     supabase.from('QuestInstance').select('*').eq('completion', false).eq('needReview', true)
@@ -60,28 +61,19 @@ async function onQuestInstanceInfoButtonClick(interaction, supabase) {
             if (data && data.length > 0) {
                 const availableQuestData = data;
                 if (interaction.customId === 'approveCompletion') {
-                    supabase.from('QuestInstance').update({ 'completion': true, 'needReview': false }).eq('questId', questId).eq('dcId', questSubmitterId)
-                        .then((res) => {
-                            if (res.error !== null) {
-                                botErrorReply(interaction);
-                            }
-                            else {
-                                // TODO: add buildApproveCompletionModal
-                                const approveCompletionModal = buildApproveCompletionModal(questId, questSubmitterId);
-                                interaction.showModal(approveCompletionModal);
-                            }
-                        });
-
+                    const approveCompletionModal = buildApproveCompletionModal(questId, questSubmitterId, questName);
+                    interaction.showModal(approveCompletionModal);
                 }
                 else if (interaction.customId === 'rejectCompletion') {
-                    console.log(questSubmitter, questId);
-                    // TODO: not working update
                     supabase.from('QuestInstance').update({ 'failAt': new Date(), 'completion': true, 'needReview': false }).eq('questId', questId).eq('dcId', questSubmitterId)
                         .then((res) => {
                             if (res.error !== null) {
                                 botErrorReply(interaction);
                             }
                             console.log('QuestInstance rejectCompletion');
+                        })
+                        .catch((err) => {
+                            console.log(err);
                         });
                     supabase.from('Player').update({ 'currentTaskId': null }).eq('dcId', questSubmitterId).eq('guildId', guild.id)
                         .then((res) => {
@@ -89,9 +81,17 @@ async function onQuestInstanceInfoButtonClick(interaction, supabase) {
                                 botErrorReply(interaction);
                             }
                             console.log('Player rejectCompletion');
+                        })
+                        .catch((err) => {
+                            console.log(err);
                         });
+
+                    client.users.fetch(questSubmitterId, false).then((user) => {
+                        user.send('提交的任务已经被驳回！请联系任务部！');
+                    });
+
                     interaction.reply({
-                        content: `${questSubmitter} 提交的任务 ${questId} 已经被驳回！`,
+                        content: `<@${questSubmitterId}> 提交的任务 ${questId} 已经被驳回！`,
                         ephemeral: true,
                     });
                 }
@@ -123,6 +123,9 @@ async function onQuestInstanceInfoButtonClick(interaction, supabase) {
                     });
                 }
             }
+        })
+        .catch((err) => {
+            console.log(err);
         });
 
 }
@@ -131,7 +134,8 @@ async function onQuestInstanceInfoButtonClick(interaction, supabase) {
 async function onQuestInfoButtonClick(interaction, supabase) {
     const questId = interaction.message.embeds[0].fields[2].value;
     const questIdx = parseInt(interaction.message.embeds[0].fields[3].value);
-
+    const questName = interaction.message.embeds[0].fields[5].value;
+    console.log(questName);
     const client = interaction.client;
     // get quest list from the database
     supabase.from('Quest').select('*').filter('expireAt', 'gte', JSON.stringify(new Date()))
@@ -171,6 +175,7 @@ async function onQuestInfoButtonClick(interaction, supabase) {
                             else {
                                 const newQuestInstance = new QuestInstance(questId, interaction.user.id);
                                 newQuestInstance.questAcceptAt();
+                                newQuestInstance.name = questName;
 
                                 const questInstanceData = newQuestInstance.returnAttributeToStore();
                                 // create a new quest instance
@@ -188,10 +193,10 @@ async function onQuestInfoButtonClick(interaction, supabase) {
                                             sendMessageToChannel(
                                                 client,
                                                 missionBroadcastChannel,
-                                                `<@${interaction.user.id}> 接受了任务【${questId}】！`,
+                                                `<@${interaction.user.id}> 接受了任务【${questName}】！`,
                                             );
                                             interaction.reply({
-                                                content: `任务 ${questId} 已经接受成功！`,
+                                                content: `任务 ${questName} 已经接受成功！`,
                                                 ephemeral: true,
                                             });
 
@@ -206,6 +211,9 @@ async function onQuestInfoButtonClick(interaction, supabase) {
                                     });
 
                             }
+                        })
+                        .catch((err) => {
+                            console.log(err);
                         });
                 }
                 // TODO: not used at the moment
@@ -271,6 +279,9 @@ async function onQuestInfoButtonClick(interaction, supabase) {
                     ephemeral: true,
                 });
             }
+        })
+        .catch((err) => {
+            console.log(err);
         });
 
 
@@ -279,20 +290,12 @@ async function onQuestInfoButtonClick(interaction, supabase) {
 
 async function onQuestApproveModalSubmit(interaction, supabase) {
     const questId = interaction.fields.getTextInputValue('questIdInput');
+    const questName = interaction.fields.getTextInputValue('questNameInput');
     const questSubmitter = interaction.fields.getTextInputValue('questSubmitterInput');
     const questReward = interaction.fields.getTextInputValue('questRewardInput');
     const questSubmitterId = questSubmitter.replace('<@', '').replace('>', '');
     const guild = interaction.guild;
     const client = interaction.client;
-    // constructor() {
-    //     this.missionId = 0;
-    //     this.expModAmt = 0;
-    //     this.createdAt = new Date();
-    //     this.updatedBy = null;
-    //     this.note = null;
-    //     this.targetPlayerId = null;
-    //     this.targetPlayerDcId = null;
-    // }
 
     const expLog = new ExpModLog();
     expLog.setMissionId(questId);
@@ -300,8 +303,18 @@ async function onQuestApproveModalSubmit(interaction, supabase) {
     expLog.setUpdatedBy(interaction.user.id);
     expLog.setNote('任务完成奖励');
     expLog.setTargetPlayerId(questSubmitter);
-    // TODO: expLog.setTargetPlayerDcId(?);
+    // expLog.setTargetPlayerDcId(questSubmitterId);
 
+    // update quest instance
+    supabase.from('QuestInstance').update({ 'completeAt': new Date(), 'completion': true, 'needReview': false }).eq('questId', questId).eq('dcId', questSubmitter)
+        .then((res) => {
+            if (res.error !== null) {
+                botErrorReply(interaction);
+            }
+        })
+        .catch((err) => {
+            console.log(err);
+        });
 
     // create expmodlog
     supabase.from('ExpModLog').insert(expLog.returnAttributeToStore())
@@ -311,55 +324,46 @@ async function onQuestApproveModalSubmit(interaction, supabase) {
                 botErrorReply(interaction);
             }
             else {
-                console.log('ExpModLog Inserted approveCompletion');
-                // update quest instance
-                supabase.from('QuestInstance').update({ 'completeAt': new Date(), 'completion': true, 'needReview': false }).eq('questId', questId).eq('dcId', questSubmitter)
+                supabase.from('Player').select('*').eq('dcId', questSubmitterId).eq('guildId', guild.id)
                     .then((res) => {
+                        // console.log(res);
                         if (res.error !== null) {
                             botErrorReply(interaction);
                         }
                         else {
-                            console.log('QuestInstance approveCompletion');
-                            // update player
-                            supabase.from('Player').select('*').eq('dcId', questSubmitterId).eq('guildId', guild.id)
+                            return res['data'];
+                        }
+                    })
+                    .then((data) => {
+                        if (data && data.length > 0) {
+                            const player = data[0];
+                            const newExp = player['exp'] + parseInt(questReward);
+
+                            supabase.from('Player').update({ 'exp': newExp, 'currentTaskId': null }).eq('dcId', questSubmitterId).eq('guildId', guild.id)
                                 .then((res) => {
-                                    // console.log(res);
                                     if (res.error !== null) {
                                         botErrorReply(interaction);
                                     }
                                     else {
-                                        return res['data'];
-                                    }
-                                })
-                                .then((data) => {
-                                    console.log('Player approveCompletion', data);
-                                    if (data && data.length > 0) {
-                                        const player = data[0];
-                                        // console.log(player['exp']);
-                                        const newExp = player['exp'] + parseInt(questReward);
-                                        // console.log(newExp);
-
-                                        supabase.from('Player').update({ 'exp': newExp, 'currentTaskId': null }).eq('dcId', questSubmitterId).eq('guildId', guild.id)
-                                            .then((res) => {
-                                                if (res.error !== null) {
-                                                    botErrorReply(interaction);
-                                                }
-                                                else {
-                                                    console.log('Player approveCompletion');
-                                                    sendMessageToChannel(
-                                                        client,
-                                                        missionBroadcastChannel,
-                                                        `${questSubmitter} 提交的任务 ${questId} 已经被批准！\n奖励 ${questReward} 经验值！`,
-                                                    );
-                                                    interaction.reply({
-                                                        content: `${questSubmitter} 提交的任务 ${questId} 已经被批准！\n奖励 ${questReward} 经验值！`,
-                                                        ephemeral: true,
-                                                    });
-                                                }
-                                            });
+                                        console.log('Player approveCompletion');
+                                        sendMessageToChannel(
+                                            client,
+                                            missionBroadcastChannel,
+                                            `<@${questSubmitterId}> 提交的任务 【${questName}】 已经完成！\n获得奖励 ${questReward} 经验值！`,
+                                        );
+                                        client.users.fetch(questSubmitterId).then((user) => {
+                                            user.send(`你提交的任务 【${questName}】 已经完成！\n获得奖励 ${questReward} 经验值！`);
+                                        });
+                                        interaction.reply({
+                                            content: `你刚刚审核了 <@${questSubmitterId}> 提交的任务 【${questName}】！\n<@${questSubmitterId}> 获得奖励 ${questReward} 经验值！`,
+                                            ephemeral: true,
+                                        });
                                     }
                                 });
                         }
+                    })
+                    .catch((err) => {
+                        console.log(err);
                     });
             }
         });
@@ -417,6 +421,9 @@ async function onPublishQuestModalSubmit(interaction, supabase) {
                     console.debug(JSON.stringify(res.error));
                     botErrorReply(interaction);
                 }
+            })
+            .catch((err) => {
+                console.log(err);
             });
     }
     else {

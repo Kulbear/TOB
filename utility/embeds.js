@@ -2,7 +2,7 @@ const { EmbedBuilder } = require('discord.js');
 
 function buildQuestInfoEmbed(questToShow) {
     const questName = questToShow['name'];
-    const questDescription = questToShow['description'];
+    const questDescription = questToShow['description'] ? questToShow['description'] : '无';
     const author = questToShow['createdBy'];
     const questExpireAt = questToShow['expireAt'];
     const questReward = questToShow['rewardText'];
@@ -52,11 +52,12 @@ function buildQuestReviewListInfoEmbed(
     console.log(questsToShow);
     const questToShow = questsToShow[questIdx - 1];
     const questId = questToShow['questId'];
+    const questName = questToShow['name'];
     const submitter = questToShow['dcId'];
 
     const embed = new EmbedBuilder()
         .setColor(0x0099ff)
-        .setTitle(`任务审核 - ${questId}`)
+        .setTitle(`任务审核 - ${questName}`)
         .setAuthor({
             name: interaction.guild.members.cache.get(submitter).nickname,
             iconURL: `https://cdn.discordapp.com/avatars/${submitter}/${interaction.member.user.avatar}.png`,
@@ -73,7 +74,12 @@ function buildQuestReviewListInfoEmbed(
         {
             name: '任务列表顺序',
             value: `${questIdx}`,
-        })
+        },
+        {
+            name: '任务名称',
+            value: questName,
+        },
+        )
         .setTimestamp()
         .setFooter({
             text: `共${questsToShow.length}个待审核任务，这是第${questIdx}个任务`,
@@ -89,7 +95,7 @@ function buildQuestListInfoEmbed(
     ops = '接受',
 ) {
     const questToShow = questsToShow[questIdx - 1];
-    const questDescription = questToShow['description'];
+    const questDescription = questToShow['description'] ? questToShow['description'] : '无';
     // const durationTextRaw = questToShow['durationTextRaw'];
     const questName = questToShow['name'];
     const author = questToShow['createdBy'];
@@ -124,6 +130,10 @@ function buildQuestListInfoEmbed(
         }, {
             name: '正在操作',
             value: ops,
+        },
+        {
+            name: '任务名称',
+            value: questName,
         })
         .setTimestamp()
         .setFooter({
