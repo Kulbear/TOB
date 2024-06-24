@@ -44,7 +44,7 @@ module.exports = {
     // Subcommand for general users
         .addStringOption(option =>
             option.setName('ops')
-                .setDescription('[General] Publish a quest...')
+                .setDescription('请在列表中选择一个操作')
                 .setRequired(true)
                 .addChoices(
                     { name:'publish', value:'publish' },

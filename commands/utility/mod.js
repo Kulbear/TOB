@@ -8,7 +8,7 @@ const {
     ExpModLog,
 } = require('../../models/log.js');
 const {
-    missionAdminRoleID,
+    adminRoleID,
     expLogBroadcastChannel,
 } = require('../../botConfig.json');
 const {
@@ -39,7 +39,7 @@ module.exports = {
         const note = interaction.options.getString('note');
         const guild = interaction.guild;
 
-        if (interaction.member.roles.cache.has(missionAdminRoleID) || interaction.user.id == '1191572677165588538') {
+        if (interaction.member.roles.cache.has(adminRoleID) || interaction.user.id == '1191572677165588538') {
             const log = new ExpModLog();
             log.setUpdatedBy(interaction.user.id);
             log.setExpModAmt(expAmt);
