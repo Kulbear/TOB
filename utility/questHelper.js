@@ -133,8 +133,9 @@ async function onQuestInstanceInfoButtonClick(interaction, supabase) {
 
 async function onQuestInfoButtonClick(interaction, supabase) {
     const questName = interaction.message.embeds[0].fields[0].value;
-    const questId = interaction.message.embeds[0].fields[3].value;
-    const questIdx = parseInt(interaction.message.embeds[0].fields[4].value);
+    const questReward = interaction.message.embeds[0].fields[1].value;
+    const questId = interaction.message.embeds[0].fields[4].value;
+    const questIdx = parseInt(interaction.message.embeds[0].fields[5].value);
 
     const client = interaction.client;
     // get quest list from the database
