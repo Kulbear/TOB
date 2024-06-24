@@ -1,4 +1,7 @@
-const { EmbedBuilder } = require('discord.js');
+const {
+    EmbedBuilder,
+} = require('discord.js');
+
 
 function sendMessageToChannel(client, channelId, messageContent) {
     console.debug('[DEBUG][sendMessageToChannel]', channelId, messageContent);

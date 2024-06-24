@@ -1,11 +1,20 @@
-const { SlashCommandBuilder } = require('discord.js');
-const { Player } = require('../../models/player.js');
-const { ExpModLog } = require('../../models/log.js');
 const {
-    missionAdminRoleID,
+    SlashCommandBuilder,
+} = require('discord.js');
+const {
+    Player,
+} = require('../../models/player.js');
+const {
+    ExpModLog,
+} = require('../../models/log.js');
+const {
+    adminRoleID,
     expLogBroadcastChannel,
 } = require('../../botConfig.json');
-const { sendMessageToChannel } = require('../../utility/guildMessages.js');
+const {
+    sendMessageToChannel,
+} = require('../../utility/guildMessages.js');
+
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -30,7 +39,7 @@ module.exports = {
         const note = interaction.options.getString('note');
         const guild = interaction.guild;
 
-        if (interaction.member.roles.cache.has(missionAdminRoleID) || interaction.user.id == '1191572677165588538') {
+        if (interaction.member.roles.cache.has(adminRoleID) || interaction.user.id == '1191572677165588538') {
             const log = new ExpModLog();
             log.setUpdatedBy(interaction.user.id);
             log.setExpModAmt(expAmt);

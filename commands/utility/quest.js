@@ -5,30 +5,37 @@ const {
 const {
     buildQuestPublishModal,
 } = require('../../utility/modalUtils.js');
+
 const {
     buildQuestInfoEmbed,
     buildQuestListInfoEmbed,
     buildQuestReviewListInfoEmbed,
 } = require('../../utility/embeds.js');
+
 const {
     buildQuestInfoButtonRow,
     buildQuestReviewButtonRow,
 } = require('../../utility/componentUtils.js');
+
 const {
     Player,
 } = require('../../models/player.js');
+
 const {
     Quest,
     QuestInstance,
 } = require('../../models/quest.js');
+
 const {
     missionBroadcastChannel,
     missionAdminRoleID,
 } = require('../../botConfig.json');
+
 const {
     sendMessageToChannel,
     botErrorReply,
 } = require('../../utility/guildMessages.js');
+
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -37,7 +44,7 @@ module.exports = {
     // Subcommand for general users
         .addStringOption(option =>
             option.setName('ops')
-                .setDescription('[General] Publish a quest...')
+                .setDescription('请在列表中选择一个操作')
                 .setRequired(true)
                 .addChoices(
                     { name:'publish', value:'publish' },

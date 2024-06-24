@@ -15,6 +15,7 @@ const {
 const {
     buildApproveCompletionModal,
 } = require('./modalUtils.js');
+
 const {
     missionAdminRoleID,
     missionBroadcastChannel,
@@ -37,14 +38,13 @@ function getCurrentTime() {
 }
 
 async function onQuestInstanceInfoButtonClick(interaction, supabase) {
-    const questId = interaction.message.embeds[0].fields[0].value;
-    const questIdx = parseInt(interaction.message.embeds[0].fields[2].value);
-    const questSubmitter = interaction.message.embeds[0].fields[1].value;
-    const questName = interaction.message.embeds[0].fields[3].value;
+    const questName = interaction.message.embeds[0].fields[0].value;
+    const questId = interaction.message.embeds[0].fields[1].value;
+    const questSubmitter = interaction.message.embeds[0].fields[2].value;
+    const questIdx = parseInt(interaction.message.embeds[0].fields[3].value);
     // questSubmitter is something like <@123>, we need to remove <@ and > to get the id
     const questSubmitterId = questSubmitter.replace('<@', '').replace('>', '');
 
-    // console.log(questId, questIdx, questSubmitter);
     const client = interaction.client;
     const guild = interaction.guild;
     // get quest list from the database
@@ -132,10 +132,11 @@ async function onQuestInstanceInfoButtonClick(interaction, supabase) {
 
 
 async function onQuestInfoButtonClick(interaction, supabase) {
-    const questId = interaction.message.embeds[0].fields[2].value;
-    const questIdx = parseInt(interaction.message.embeds[0].fields[3].value);
-    const questName = interaction.message.embeds[0].fields[5].value;
-    console.log(questName);
+    const questName = interaction.message.embeds[0].fields[0].value;
+    const questReward = interaction.message.embeds[0].fields[1].value;
+    const questId = interaction.message.embeds[0].fields[4].value;
+    const questIdx = parseInt(interaction.message.embeds[0].fields[5].value);
+
     const client = interaction.client;
     // get quest list from the database
     supabase.from('Quest').select('*').filter('expireAt', 'gte', JSON.stringify(new Date()))
@@ -291,9 +292,8 @@ async function onQuestInfoButtonClick(interaction, supabase) {
 async function onQuestApproveModalSubmit(interaction, supabase) {
     const questId = interaction.fields.getTextInputValue('questIdInput');
     const questName = interaction.fields.getTextInputValue('questNameInput');
-    const questSubmitter = interaction.fields.getTextInputValue('questSubmitterInput');
+    const questSubmitterId = interaction.fields.getTextInputValue('questSubmitterIdInput');
     const questReward = interaction.fields.getTextInputValue('questRewardInput');
-    const questSubmitterId = questSubmitter.replace('<@', '').replace('>', '');
     const guild = interaction.guild;
     const client = interaction.client;
 
@@ -301,9 +301,11 @@ async function onQuestApproveModalSubmit(interaction, supabase) {
     expLog.setMissionId(questId);
     expLog.setExpModAmt(parseInt(questReward));
     expLog.setUpdatedBy(interaction.user.id);
-    expLog.setNote('任务完成奖励');
-    expLog.setTargetPlayerId(questSubmitter);
-    // expLog.setTargetPlayerDcId(questSubmitterId);
+    expLog.setNote(`任务【${questName}】完成奖励`);
+    expLog.setTargetPlayerDcId(questSubmitterId);
+    // get player dctag from guild
+    const member = guild.members.cache.get(questSubmitterId);
+    expLog.setTargetPlayerId(member.user.tag);
 
     // update quest instance
     supabase.from('QuestInstance').update({ 'completeAt': new Date(), 'completion': true, 'needReview': false }).eq('questId', questId).eq('dcId', questSubmitter)
