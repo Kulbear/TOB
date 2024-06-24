@@ -1,5 +1,6 @@
 const {
     SlashCommandBuilder,
+    PermissionsBitField,
 } = require('discord.js');
 const {
     Player,
@@ -8,7 +9,6 @@ const {
     ExpModLog,
 } = require('../../models/log.js');
 const {
-    adminRoleID,
     expLogBroadcastChannel,
 } = require('../../botConfig.json');
 const {
@@ -39,7 +39,7 @@ module.exports = {
         const note = interaction.options.getString('note');
         const guild = interaction.guild;
 
-        if (interaction.member.roles.cache.has(adminRoleID) || interaction.user.id == '1191572677165588538') {
+        if (interaction.member.permissions.has(PermissionsBitField.Flags.Administrator)) {
             const log = new ExpModLog();
             log.setUpdatedBy(interaction.user.id);
             log.setExpModAmt(expAmt);
