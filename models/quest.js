@@ -252,6 +252,7 @@ class QuestInstance {
         this.rewardCoefficient = QuestExpRewardCoefficient.REWARD_NORMAL;
         this.rewardExp = null;
         this.needReview = false;
+        this.reviewedByDcTag = null;
     }
 
     /**
@@ -270,6 +271,7 @@ class QuestInstance {
         this.rewardCoefficient = attributes['rewardCoefficient'];
         this.rewardExp = attributes['rewardExp'];
         this.needReview = attributes['needReview'];
+        this.reviewedByDcTag = attributes['reviewedByDcTag'];
     }
 
     /**
@@ -288,6 +290,7 @@ class QuestInstance {
             'rewardCoefficient': this.rewardCoefficient,
             'rewardExp': this.rewardExp,
             'needReview': this.needReview,
+            'reviewedByDcTag': this.reviewedByDcTag,
         };
     }
 
@@ -318,6 +321,10 @@ class QuestInstance {
 	 */
     questFailedAt() {
         this.failAt = getCurrentTime();
+    }
+
+    setReviewedByDcTag(reviewedByDcTag) {
+        this.reviewedByDcTag = reviewedByDcTag;
     }
 }
 

@@ -303,12 +303,13 @@ async function onQuestApproveModalSubmit(interaction, supabase) {
     expLog.setUpdatedBy(interaction.user.id);
     expLog.setNote(`任务【${questName}】完成奖励`);
     expLog.setTargetPlayerDcId(questSubmitterId);
+    expLog.setUpdatedByDcTag(interaction.user.username);
     // get player dctag from guild
     const member = guild.members.cache.get(questSubmitterId);
     expLog.setTargetPlayerId(member.user.tag);
 
     // update quest instance
-    supabase.from('QuestInstance').update({ 'completeAt': new Date(), 'completion': true, 'needReview': false }).eq('questId', questId).eq('dcId', questSubmitter)
+    supabase.from('QuestInstance').update({ 'completeAt': new Date(), 'completion': true, 'needReview': false, 'reviewedByDcTag': interaction.user.username }).eq('questId', questId).eq('dcId', questSubmitterId)
         .then((res) => {
             if (res.error !== null) {
                 botErrorReply(interaction);

@@ -4,6 +4,7 @@ class ExpModLog {
         this.expModAmt = 0;
         this.createdAt = new Date();
         this.updatedBy = null;
+        this.updatedByDcTag = null;
         this.note = null;
         this.targetPlayerId = null;
         this.targetPlayerDcId = null;
@@ -23,6 +24,10 @@ class ExpModLog {
 
     setUpdatedBy(updatedBy) {
         this.updatedBy = updatedBy;
+    }
+
+    setUpdatedByDcTag(updatedByDcTag) {
+        this.updatedByDcTag = updatedByDcTag;
     }
 
     setNote(note) {
@@ -65,11 +70,16 @@ class ExpModLog {
         return this.targetPlayerDcId;
     }
 
+    getUpdatedByDcTag() {
+        return this.updatedByDcTag;
+    }
+
     updateAttributeFromStore(attributes) {
         this.missionId = attributes['missionId'];
         this.expModAmt = attributes['expModAmt'];
         this.createdAt = new Date(attributes['createdAt']);
         this.updatedBy = attributes['updatedBy'];
+        this.updatedByDcTag = attributes['updatedByDcTag'];
         this.note = attributes['note'];
         this.targetPlayerId = attributes['targetPlayerId'];
         this.targetPlayerDcId = attributes['targetPlayerDcId'];
@@ -80,6 +90,7 @@ class ExpModLog {
             'expModAmt': this.expModAmt,
             'createdAt': this.createdAt,
             'updatedBy': this.updatedBy,
+            'updatedByDcTag': this.updatedByDcTag,
             'note': this.note,
             'targetPlayerId': this.targetPlayerId,
             'targetPlayerDcId': this.targetPlayerDcId,

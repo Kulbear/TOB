@@ -2,15 +2,19 @@ const {
     SlashCommandBuilder,
     PermissionsBitField,
 } = require('discord.js');
+
 const {
     Player,
 } = require('../../models/player.js');
+
 const {
     ExpModLog,
 } = require('../../models/log.js');
+
 const {
     expLogBroadcastChannel,
 } = require('../../botConfig.json');
+
 const {
     sendMessageToChannel,
 } = require('../../utility/guildMessages.js');
@@ -45,6 +49,7 @@ module.exports = {
             log.setExpModAmt(expAmt);
             log.setNote(note);
             log.setTargetPlayerId(userDCTag);
+            log.setUpdatedByDcTag(interaction.user.username);
 
             // find the user from the database
             supabase.from('Player').select().eq('dcTag', userDCTag).eq('guildId', guild.id)
