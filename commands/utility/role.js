@@ -3,6 +3,13 @@ const {
     PermissionsBitField,
 } = require('discord.js');
 
+const {
+    gameRoleIDs,
+    guideReadRoleID,
+    ruleReadRoleID,
+} = require('../../botConfig.json');
+
+
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('role')
@@ -44,12 +51,25 @@ module.exports = {
                         // assign role to players
                         res.data.forEach((player) => {
                             const member = guild.members.cache.get(player.dcId);
-                            // get the role object from guild
-                            const role = guild.roles.cache.get(roleId);
-                            if (mode === 'assign') {
-                                member.roles.add(role);
+                            if (!member) { return }
+                            // now check if user is qualified to get a profile card
+                            let validRoleCounter = 0;
+                            // here we want to check if a member has at least 2 of the game roles
+                            // if they do, we want to log their tag
+                            for (const roleID in gameRoleIDs) {
+                                if (member.roles.cache.has(roleID)) {
+                                    validRoleCounter++;
+                                }
                             }
-                            else if (mode === 'remove') {
+                            const role = guild.roles.cache.get(roleId);
+                            if (member.roles.cache.has(ruleReadRoleID) && member.roles.cache.has(guideReadRoleID) && validRoleCounter >= 3) {
+                                // get the role object from guild
+                                if (mode === 'assign') {
+                                    member.roles.add(role);
+                                }
+                            }
+
+                            if (mode === 'remove') {
                                 member.roles.remove(role);
                             }
                         });
