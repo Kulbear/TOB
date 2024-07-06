@@ -124,44 +124,8 @@ async function getInteractionUserProfile(interaction, supabase) {
                         }
                     });
 
-                return player;
+                return { player: player };
             }
-        })
-        .then((player) => {
-            // fetch counter data related to this player
-            if (player === null) {
-                return null, null;
-            }
-            return supabase.from('Counter').select().eq('dcId', player.dcId)
-                .then((res) => {
-                    const counter = new Counter();
-                    if (res.data.length !== 0) {
-                        counter.updateAttributeFromStore(res.data[0]);
-
-                        const now = new Date();
-                        if (counter.lastResetTime === null || now - counter.lastResetTime > 79200000) {
-                            counter.resetDaily();
-                            supabase.from('Counter').update(counter.returnAttributeToStore()).eq('dcId', player.dcId)
-                                .then((res) => {
-                                    if (res.error !== null) {
-                                        console.error(res.error);
-                                    }
-                                });
-                        }
-                    }
-                    else {
-                        counter.setDcId(player.dcId);
-                        counter.setDcTag(player.dcTag);
-                        counter.resetDaily();
-                        supabase.from('Counter').insert(counter.returnAttributeToStore())
-                            .then((res) => {
-                                if (res.error !== null) {
-                                    console.error(res.error);
-                                }
-                            });
-                    }
-                    return { player: player, counter: counter };
-                });
         });
 }
 

@@ -39,6 +39,10 @@ const {
     botCommandChannel,
 } = require('../../botConfig.json');
 
+const {
+    Counter,
+} = require('../../models/utility.js');
+
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -61,10 +65,9 @@ module.exports = {
             return;
         }
 
-        getInteractionUserProfile(interaction, supabase)
+        await getInteractionUserProfile(interaction, supabase)
             .then((res) => {
                 const player = res.player;
-                const counter = res.counter;
                 if (player === null) {
                     sendMessageToChannel(
                         client,
@@ -94,7 +97,7 @@ module.exports = {
                             tier: player.role,
                             avatarId: interaction.user.avatar,
                         };
-                        return { payload: payload, counter: counter };
+                        return { payload: payload };
                     }
                     else {
                         const payload = {
@@ -107,14 +110,15 @@ module.exports = {
                             tier: player.role,
                             avatarId: interaction.user.avatar,
                         };
-                        return { payload: payload, counter: counter };
+                        return { payload: payload };
                     }
 
                 }
             })
             .then((res) => {
                 const payload = res.payload;
-                const counter = res.counter;
+
+
                 if (payload === null) {
                     return;
                 }
@@ -132,36 +136,69 @@ module.exports = {
                         body: JSON.stringify(payload),
                     })
                     .then((res) => {
-                        const expireDate = new Date(counter.lastResetTime);
-                        expireDate.setHours(counter.lastResetTime.getHours() + 22);
-                        const { days, hours, minutes } = convertMsToDHMS(expireDate - new Date());
-                        const diffStr = (days > 0 ? `${days} 天 ` : '') + (hours > 0 ? `${hours} 小时 ` : '') + (minutes > 0 ? `${minutes} 分钟 ` : '') + '后';
+                        const counter = supabase.from('Counter').select().eq('dcId', payload.dcId)
+                            .then((res) => {
+                                const ct = new Counter();
+                                if (res.data.length !== 0) {
+                                    ct.updateAttributeFromStore(res.data[0]);
 
-                        const profileCardImage = new AttachmentBuilder(`python/profile_${userTag}.jpg`, { name: `profile_${userTag}.jpg` });
-                        const embed = buildUserProfileEmbed({
-                            userNickname: userNickname,
-                            userTag: userTag,
-                            dailyTextChatExpLimit: dailyTextChatExpLimit,
-                            dailyVoiceChatExpLimit: dailyVoiceChatExpLimit,
-                            counter: counter,
-                            diffStr: diffStr,
-                        });
+                                    const now = new Date();
+                                    if (ct.lastResetTime === null || now - ct.lastResetTime > 79200000) {
+                                        ct.resetDaily();
+                                        supabase.from('Counter').update(ct.returnAttributeToStore()).eq('dcId', payload.dcId)
+                                            .then((res) => {
+                                                if (res.error !== null) {
+                                                    console.error(res.error);
+                                                }
+                                            });
+                                    }
+                                }
+                                else {
+                                    counter.setDcId(payload.dcId);
+                                    counter.setDcTag(payload.dcTag);
+                                    counter.resetDaily();
+                                    supabase.from('Counter').insert(counter.returnAttributeToStore())
+                                        .then((res) => {
+                                            if (res.error !== null) {
+                                                console.error(res.error);
+                                            }
+                                        });
 
-                        if (res.status === 200) {
-                            const replayStr = payload.level === 0 ? 'TOB 刚刚在堆积如山的资料中翻出了你的档案...\n根据资料显示，你已有的经验和等级数据保存完好，但你需要完成初始任务来继续积累经验）\n1. 阅读【社区规则】并点击下方反应\n2. 阅读【频道指南】并点击下方反应\n3. 通过【领身份组】获取至少三个游戏的身份组' : 'TOB 刚刚在堆积如山的资料中翻出了你的档案...';
-                            return interaction.reply({
-                                content: replayStr,
-                                ephemeral: false,
-                                embeds: [embed],
-                                files: [profileCardImage],
+                                }
+
+                                return ct;
+                            }).then((ct) => {
+                                const expireDate = new Date(ct.lastResetTime);
+                                expireDate.setHours(ct.lastResetTime.getHours() + 22);
+                                const { days, hours, minutes } = convertMsToDHMS(expireDate - new Date());
+                                const diffStr = (days > 0 ? `${days} 天 ` : '') + (hours > 0 ? `${hours} 小时 ` : '') + (minutes > 0 ? `${minutes} 分钟 ` : '') + '后';
+
+                                const profileCardImage = new AttachmentBuilder(`python/profile_${userTag}.jpg`, { name: `profile_${userTag}.jpg` });
+                                const embed = buildUserProfileEmbed({
+                                    userNickname: userNickname,
+                                    userTag: userTag,
+                                    dailyTextChatExpLimit: dailyTextChatExpLimit,
+                                    dailyVoiceChatExpLimit: dailyVoiceChatExpLimit,
+                                    counter: ct,
+                                    diffStr: diffStr,
+                                });
+
+                                if (res.status === 200) {
+                                    const replayStr = payload.level === 0 ? 'TOB 刚刚在堆积如山的资料中翻出了你的档案...\n根据资料显示，你已有的经验和等级数据保存完好，但你需要完成初始任务来继续积累经验）\n1. 阅读【社区规则】并点击下方反应\n2. 阅读【频道指南】并点击下方反应\n3. 通过【领身份组】获取至少三个游戏的身份组' : 'TOB 刚刚在堆积如山的资料中翻出了你的档案...';
+                                    return interaction.reply({
+                                        content: replayStr,
+                                        ephemeral: false,
+                                        embeds: [embed],
+                                        files: [profileCardImage],
+                                    });
+                                }
+                                else {
+                                    interaction.reply({
+                                        content: 'TOB 费了九牛二虎之力也没有找到你的信息。请联系管理员或稍后再试！',
+                                        ephemeral: false,
+                                    });
+                                }
                             });
-                        }
-                        else {
-                            interaction.reply({
-                                content: 'TOB 费了九牛二虎之力也没有找到你的信息。请联系管理员或稍后再试！',
-                                ephemeral: false,
-                            });
-                        }
                     });
             })
             .then(() => {
