@@ -9,6 +9,9 @@ const {
     ruleReadRoleID,
 } = require('../../botConfig.json');
 
+const {
+    checkMemberPermission,
+} = require('../../utility/helpers.js');
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -36,7 +39,8 @@ module.exports = {
         const mode = interaction.options.getString('mode');
         const guild = interaction.guild;
 
-        if (interaction.member.permissions.has(PermissionsBitField.Flags.Administrator)) {
+
+        if (checkMemberPermission(interaction.member, PermissionsBitField.Flags.Administrator)) {
             // select all players with level > lvReq from supabase
             supabase.from('Player').select().eq('guildId', guild.id).gte('level', lvReq)
                 .then((res) => {
@@ -51,7 +55,7 @@ module.exports = {
                         // assign role to players
                         res.data.forEach((player) => {
                             const member = guild.members.cache.get(player.dcId);
-                            if (!member) { return }
+                            if (!member) { return; }
                             // now check if user is qualified to get a profile card
                             let validRoleCounter = 0;
                             // here we want to check if a member has at least 2 of the game roles

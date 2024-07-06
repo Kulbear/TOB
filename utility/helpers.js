@@ -9,7 +9,17 @@ function convertMsToDHMS(ms) {
     return { days, hours, minutes, seconds };
 }
 
+function checkMemberRole(member, roleId) {
+    return member.roles.cache.has(roleId);
+}
+
+
+function checkMemberPermission(member, permission) {
+    return member.permissions.has(permission);
+}
 
 module.exports = {
     convertMsToDHMS,
+    checkMemberRole,
+    checkMemberPermission,
 };

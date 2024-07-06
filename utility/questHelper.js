@@ -1,4 +1,8 @@
 const {
+    PermissionsBitField,
+} = require('discord.js');
+
+const {
     Quest,
     QuestInstance,
 } = require('../models/quest.js');
@@ -25,6 +29,12 @@ const {
     buildQuestListInfoEmbed,
     buildQuestReviewListInfoEmbed,
 } = require('./embeds.js');
+
+const {
+    checkMemberRole,
+    checkMemberPermission,
+} = require('./helpers.js');
+
 
 const {
     buildQuestInfoButtonRow,
@@ -398,7 +408,7 @@ async function onPublishQuestModalSubmit(interaction, supabase) {
     questToSubmit.setCreatedAt(getCurrentTime());
     // force update
     questToSubmit.updateQuestStatus();
-    if (interaction.member.roles.cache.has(missionAdminRoleID) || interaction.user.id == '1191572677165588538') {
+    if (checkMemberRole(interaction.member, missionAdminRoleID) || checkMemberPermission(interaction.member, PermissionsBitField.Flags.Administrator)) {
         questToSubmit.updateQuestStatus({ adminUpdate: true });
     }
     else {

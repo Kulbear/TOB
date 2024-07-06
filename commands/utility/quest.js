@@ -1,10 +1,16 @@
 const {
     SlashCommandBuilder,
+    PermissionsBitField,
 } = require('discord.js');
 
 const {
     buildQuestPublishModal,
 } = require('../../utility/modalUtils.js');
+
+const {
+    checkMemberRole,
+    checkMemberPermission,
+} = require('../../utility/helpers.js');
 
 const {
     buildQuestInfoEmbed,
@@ -41,7 +47,6 @@ module.exports = {
     data: new SlashCommandBuilder()
         .setName('quest')
         .setDescription('Quest related options...')
-    // Subcommand for general users
         .addStringOption(option =>
             option.setName('ops')
                 .setDescription('请在列表中选择一个操作')
@@ -66,7 +71,8 @@ module.exports = {
         if (interaction.options.getString('ops') === 'review') {
             console.debug('[DEBUG] "/quest review" command received.');
 
-            if (interaction.member.roles.cache.has(missionAdminRoleID) || interaction.user.id == '1191572677165588538') {
+
+            if (checkMemberRole(interaction.member, missionAdminRoleID) || checkMemberPermission(interaction.member, PermissionsBitField.Flags.Administrator)) {
                 // const now = new Date();
             // select quest that is not expired based on the expiredAt column, which is a datetime column
                 supabase.from('QuestInstance').select('*').eq('completion', false).eq('needReview', true)
@@ -306,6 +312,7 @@ module.exports = {
 
             const user = interaction.user;
             const guild = interaction.guild;
+            const client = interaction.client;
 
             supabase.from('Player').select().eq('dcId', user.id).eq('guildId', guild.id)
                 .then((res) => {
@@ -341,6 +348,12 @@ module.exports = {
                                     botErrorReply(interaction);
                                 }
                                 else {
+                                    sendMessageToChannel(
+                                        client,
+                                        missionBroadcastChannel,
+                                        `<@${user.id}> 已经放弃任务！`,
+                                    );
+
                                     interaction.reply({
                                         content: '你当前的任务已经被放弃！',
                                         ephemeral: true,
