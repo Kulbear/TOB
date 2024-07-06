@@ -342,23 +342,37 @@ module.exports = {
                                 }
                             });
 
-                        supabase.from('QuestInstance').update({ 'failAt': new Date(), 'completion': true }).eq('dcId', player.dcId).eq('questId', currentTaskId).eq('completion', false)
+                        supabase.from('QuestInstance').select().eq('dcId', player.dcId).eq('questId', currentTaskId).eq('completion', false)
                             .then((res) => {
                                 if (res.error !== null) {
                                     botErrorReply(interaction);
                                 }
                                 else {
-                                    sendMessageToChannel(
-                                        client,
-                                        missionBroadcastChannel,
-                                        `<@${user.id}> 已经放弃任务！`,
-                                    );
-
-                                    interaction.reply({
-                                        content: '你当前的任务已经被放弃！',
-                                        ephemeral: true,
-                                    });
+                                    return res['data'];
                                 }
+                            })
+                            .then((data) => {
+                                if (data && data.length > 0) {
+                                    supabase.from('QuestInstance').update({ 'failAt': new Date(), 'completion': true }).eq('dcId', player.dcId).eq('questId', currentTaskId).eq('completion', false)
+                                        .then((res) => {
+                                            if (res.error !== null) {
+                                                botErrorReply(interaction);
+                                            }
+                                            else {
+                                                sendMessageToChannel(
+                                                    client,
+                                                    missionBroadcastChannel,
+                                                    `@${user.username} 已经放弃任务【${data[0].name}】！`,
+                                                );
+
+                                                interaction.reply({
+                                                    content: '你当前的任务已经被放弃！',
+                                                    ephemeral: true,
+                                                });
+                                            }
+                                        });
+                                }
+
                             });
 
 
