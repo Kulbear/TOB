@@ -154,10 +154,10 @@ module.exports = {
                                     }
                                 }
                                 else {
-                                    counter.setDcId(payload.dcId);
-                                    counter.setDcTag(payload.dcTag);
-                                    counter.resetDaily();
-                                    supabase.from('Counter').insert(counter.returnAttributeToStore())
+                                    ct.setDcId(payload.dcId);
+                                    ct.setDcTag(payload.dcTag);
+                                    ct.resetDaily();
+                                    supabase.from('Counter').insert(ct.returnAttributeToStore())
                                         .then((res) => {
                                             if (res.error !== null) {
                                                 console.error(res.error);

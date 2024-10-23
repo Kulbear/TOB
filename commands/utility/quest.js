@@ -228,7 +228,7 @@ module.exports = {
                 .then((data) => {
                     if (data && data.length > 0) {
                         const availableQuestData = data.filter((quest) => {
-                            return quest['repeatable'] === true || (quest['repeatable'] === false && quest['acceptedBy'].length === 0);
+                            return quest['repeatable'] === true || (quest['repeatable'] === false);
                         });
                         const embed = buildQuestListInfoEmbed(interaction, availableQuestData, 1, '接受');
 
@@ -362,7 +362,7 @@ module.exports = {
                                                 sendMessageToChannel(
                                                     client,
                                                     missionBroadcastChannel,
-                                                    `@${user.username} 已经放弃任务【${data[0].name}】！`,
+                                                    `<@${user.id}> 已经放弃任务【${data[0].name}】！`,
                                                 );
 
                                                 interaction.reply({

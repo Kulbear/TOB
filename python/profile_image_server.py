@@ -50,7 +50,7 @@ def trim_text(text, max_length=12):
 
 def build_profile_image(payload):
     dc_tag = payload["dcTag"]
-    dc_name = payload["dcName"]
+    dc_name = payload["dcName"] if payload["dcName"] else ""
     level = payload["level"]
     exp_current_level = payload["expCurrentLevel"]
     exp_current_user = payload["expCurrentUser"]

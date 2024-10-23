@@ -146,7 +146,6 @@ async function onQuestInfoButtonClick(interaction, supabase) {
     const questReward = interaction.message.embeds[0].fields[1].value;
     const questId = interaction.message.embeds[0].fields[4].value;
     const questIdx = parseInt(interaction.message.embeds[0].fields[5].value);
-
     const client = interaction.client;
     // get quest list from the database
     supabase.from('Quest').select('*').filter('expireAt', 'gte', JSON.stringify(new Date()))
@@ -162,7 +161,7 @@ async function onQuestInfoButtonClick(interaction, supabase) {
             if (data && data.length > 0) {
                 // TODO: multipletakers track
                 const availableQuestData = data.filter((quest) => {
-                    return quest['repeatable'] === true || (quest['repeatable'] === false && quest['acceptedBy'].length === 0);
+                    return quest['repeatable'] === true || (quest['repeatable'] === false);
                 });
                 if (interaction.customId === 'acceptQuest') {
                     // check if the user has current task
@@ -187,6 +186,7 @@ async function onQuestInfoButtonClick(interaction, supabase) {
                                 const newQuestInstance = new QuestInstance(questId, interaction.user.id);
                                 newQuestInstance.questAcceptAt();
                                 newQuestInstance.name = questName;
+                                newQuestInstance.acceptedByDcTag = interaction.user.username;
 
                                 const questInstanceData = newQuestInstance.returnAttributeToStore();
                                 // create a new quest instance

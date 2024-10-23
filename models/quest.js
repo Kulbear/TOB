@@ -253,6 +253,7 @@ class QuestInstance {
         this.rewardExp = null;
         this.needReview = false;
         this.reviewedByDcTag = null;
+        this.acceptedByDcTag = null;
     }
 
     /**
@@ -272,6 +273,7 @@ class QuestInstance {
         this.rewardExp = attributes['rewardExp'];
         this.needReview = attributes['needReview'];
         this.reviewedByDcTag = attributes['reviewedByDcTag'];
+        this.acceptedByDcTag = attributes['acceptedByDcTag'];
     }
 
     /**
@@ -291,6 +293,7 @@ class QuestInstance {
             'rewardExp': this.rewardExp,
             'needReview': this.needReview,
             'reviewedByDcTag': this.reviewedByDcTag,
+            'acceptedByDcTag': this.acceptedByDcTag,
         };
     }
 
